@@ -1,0 +1,25 @@
+{
+  "name": "@vben/tsconfig",
+  "version": "5.5.9",
+  "private": true,
+  "homepage": "https://github.com/xiaofeiwuuu",
+  "bugs": "https://github.com/xiaofeiwuuu/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaofeiwuuu.git",
+    "directory": "internal/tsconfig"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "base.json",
+    "library.json",
+    "node.json",
+    "web-app.json",
+    "web.json"
+  ],
+  "dependencies": {
+    "@vben/types": "workspace:*",
+    "vite": "catalog:"
+  }
+}

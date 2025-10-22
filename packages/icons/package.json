@@ -1,0 +1,22 @@
+{
+  "name": "@vben/icons",
+  "version": "5.5.9",
+  "homepage": "https://github.com/xiaofeiwuuu",
+  "bugs": "https://github.com/xiaofeiwuuu/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaofeiwuuu.git",
+    "directory": "packages/icons"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vben-core/icons": "workspace:*"
+  }
+}

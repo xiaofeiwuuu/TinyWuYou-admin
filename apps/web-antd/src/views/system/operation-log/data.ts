@@ -1,4 +1,5 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
+import type { VbenFormProps } from '#/adapter/form';
 import type { OperationLogApi } from '#/api/system/operation-log';
 
 export function getActionOptions() {
@@ -18,6 +19,73 @@ export function getMethodOptions() {
     { color: 'purple', label: 'PATCH', value: 'PATCH' },
     { color: 'red', label: 'DELETE', value: 'DELETE' },
   ];
+}
+
+export function useFormSchema(): VbenFormProps {
+  return {
+    collapsed: false,
+    wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-6',
+    schema: [
+      {
+        component: 'Input',
+        fieldName: 'module',
+        label: '模块',
+        componentProps: {
+          placeholder: '模块名称',
+        },
+      },
+      {
+        component: 'Select',
+        fieldName: 'action',
+        label: '操作类型',
+        componentProps: {
+          allowClear: true,
+          placeholder: '全部',
+          dropdownMatchSelectWidth: false,
+          options: getActionOptions().map((item) => ({
+            label: item.label,
+            value: item.value,
+          })),
+        },
+      },
+      {
+        component: 'Select',
+        fieldName: 'method',
+        label: '请求方法',
+        componentProps: {
+          allowClear: true,
+          placeholder: '全部',
+          dropdownMatchSelectWidth: false,
+          options: getMethodOptions().map((item) => ({
+            label: item.label,
+            value: item.value,
+          })),
+        },
+      },
+      {
+        component: 'Input',
+        fieldName: 'adminUsername',
+        label: '管理员',
+        componentProps: {
+          placeholder: '管理员用户名',
+        },
+      },
+      {
+        component: 'RangePicker',
+        fieldName: 'dateRange',
+        label: '时间范围',
+        formItemClass: 'col-span-2 md:col-span-2 xl:col-span-2',
+        componentProps: {
+          showTime: true,
+          format: 'YYYY-MM-DD HH:mm:ss',
+          placeholder: ['开始时间', '结束时间'],
+        },
+      },
+    ],
+    showCollapseButton: false,
+    submitOnChange: false,
+    submitOnEnter: true,
+  };
 }
 
 export function useColumns(): VxeTableGridOptions<OperationLogApi.OperationLogInfo>['columns'] {

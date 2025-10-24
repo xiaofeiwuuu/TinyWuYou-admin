@@ -66,7 +66,7 @@ const canDelete = hasAccessByCodes(['vip:delete']);
 
 const formOptions: VbenFormProps = {
   collapsed: false,
-  wrapperClass: 'grid-cols-5',
+  wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   schema: [
     {
       component: 'Input',
@@ -112,18 +112,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
       ajax: {
         query: async ({ page }, formValues) => {
-          const res = await getVipCardListApi({
+          return await getVipCardListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
             keyword: formValues.keyword || undefined,
             isUsed: formValues.isUsed !== undefined && formValues.isUsed !== '' ? Number(formValues.isUsed) : undefined,
           });
-          console.log('VIP卡列表数据:', res);
-
-          return res;
         },
       },
     },
+    rowConfig: { isCurrent: true, isHover: true },
     toolbarConfig: {
       custom: true,
       export: false,

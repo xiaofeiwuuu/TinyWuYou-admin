@@ -80,6 +80,7 @@ export function useColumns(
   }
 
   return [
+    { type: 'checkbox', width: 60 },
     { title: '序号', type: 'seq', width: 50 },
     {
       title: '标题',
@@ -92,6 +93,15 @@ export function useColumns(
       field: 'content',
       minWidth: 250,
       showOverflow: true,
+    },
+    {
+      title: '分类',
+      field: 'category.name',
+      width: 120,
+      showOverflow: true,
+      formatter: ({ row }) => {
+        return row.category?.name || '-';
+      },
     },
     {
       title: '排序',

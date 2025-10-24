@@ -42,7 +42,8 @@ export const useAuthStore = defineStore('auth', () => {
 
         // 获取用户信息并存储到 accessStore 中
         userInfo = await fetchUserInfo();
-
+        console.log(23, userInfo);
+        
         userStore.setUserInfo(userInfo);
         // accessCodes 已包含在 userInfo 中
         accessStore.setAccessCodes(userInfo.accessCodes || []);

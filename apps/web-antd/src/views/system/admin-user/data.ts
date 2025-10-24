@@ -168,14 +168,18 @@ export function useColumns(
           onClick: onActionClick,
         },
         name: 'CellOperation',
-        options: ['edit', 'delete'],
+        options: [
+          { code: 'edit', text: '编辑' },
+          { code: 'resetPassword', text: '修改密码' },
+          { code: 'delete', text: '删除' },
+        ],
       },
       field: 'operation',
       fixed: 'right',
       headerAlign: 'center',
       showOverflow: false,
       title: '操作',
-      width: 120,
+      width: 180,
     },
   ];
 }

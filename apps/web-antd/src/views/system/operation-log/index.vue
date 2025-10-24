@@ -2,9 +2,10 @@
 import { Page } from '@vben/common-ui';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getOperationLogListApi } from '#/api/system/operation-log';
-import { useColumns } from './data';
+import { useColumns, useFormSchema } from './data';
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: useFormSchema(),
   gridOptions: {
     columns: useColumns(),
     height: 'auto',
@@ -15,13 +16,37 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
       ajax: {
         query: async ({ page }, formValues) => {
-          return await getOperationLogListApi({
+          // 处理日期范围
+          const params: any = {
             page: page.currentPage,
             pageSize: page.pageSize,
-            ...formValues,
-          });
+            module: formValues.module || undefined,
+            action: formValues.action || undefined,
+            method: formValues.method || undefined,
+            adminUsername: formValues.adminUsername || undefined,
+          };
+
+          // 处理时间范围
+          if (formValues.dateRange && Array.isArray(formValues.dateRange)) {
+            const [startDate, endDate] = formValues.dateRange;
+            if (startDate) {
+              params.startDate = startDate.format('YYYY-MM-DD HH:mm:ss');
+            }
+            if (endDate) {
+              params.endDate = endDate.format('YYYY-MM-DD HH:mm:ss');
+            }
+          }
+
+          return await getOperationLogListApi(params);
         },
       },
+    },
+    rowConfig: { isCurrent: true, isHover: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      zoom: true,
     },
   },
   gridEvents: {},

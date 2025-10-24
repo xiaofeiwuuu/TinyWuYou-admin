@@ -112,7 +112,7 @@ const canDelete = hasAccessByCodes(['task:delete']);
 
 const formOptions: VbenFormProps = {
   collapsed: false,
-  wrapperClass: 'grid-cols-5',
+  wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   schema: [
     {
       component: 'Input',
@@ -154,6 +154,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
+    rowConfig: { isCurrent: true, isHover: true },
     toolbarConfig: {
       custom: true,
       export: false,

@@ -95,7 +95,7 @@ const formSchema = computed((): VbenFormSchema[] => {
  */
 async function handleLogin(values: Recordable<any>) {
   // eslint-disable-next-line no-console
-  console.log(values);
+  // console.log(values);
 }
 </script>
 

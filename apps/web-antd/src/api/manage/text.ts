@@ -91,3 +91,17 @@ export async function auditTextApi(id: number, status: number) {
 export async function batchImportTextsApi(texts: TextManageApi.SaveParams[]) {
   return requestClient.post('/admin/texts/batch', { texts });
 }
+
+/**
+ * 批量删除文案
+ */
+export async function batchDeleteTextsApi(ids: number[]) {
+  return requestClient.post('/admin/texts/batch/delete', { ids });
+}
+
+/**
+ * 批量修改文案分类
+ */
+export async function batchUpdateCategoryApi(ids: number[], categoryId: number) {
+  return requestClient.post('/admin/texts/batch/update-category', { ids, categoryId });
+}

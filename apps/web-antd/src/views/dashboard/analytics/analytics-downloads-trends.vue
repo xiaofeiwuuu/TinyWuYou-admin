@@ -3,7 +3,7 @@ import type { EchartsUIType } from '@vben/plugins/echarts';
 
 import { onMounted, ref } from 'vue';
 import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
-import { getUserStatsByDateRangeApi, getVipStatsByDateRangeApi } from '#/api/dashboard/statistics';
+import { getDownloadStatsByDateRangeApi } from '#/api/dashboard/statistics';
 
 const chartRef = ref<EchartsUIType>();
 const { renderEcharts } = useEcharts(chartRef);
@@ -23,20 +23,13 @@ async function loadData() {
     const start = formatDate(startDate);
     const end = formatDate(endDate);
 
-    // 同时获取所有用户和VIP用户数据
-    const [allUsersResult, vipUsersResult] = await Promise.all([
-      getUserStatsByDateRangeApi(start, end),
-      getVipStatsByDateRangeApi(start, end)
-    ]);
+    const result = await getDownloadStatsByDateRangeApi(start, end);
 
-    const allUsersData = allUsersResult.map(item => ({ date: item.date, count: item.newUsers }));
-    const vipUsersData = vipUsersResult.map(item => ({ date: item.date, count: item.newVips }));
+    const data = result.map(item => ({ date: item.date, count: item.downloads }));
 
     // 生成完整的30天日期列表
     const dates: string[] = [];
-    const allUsersCounts: number[] = [];
-    const vipUsersCounts: number[] = [];
-
+    const counts: number[] = [];
     for (let i = 0; i < 30; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
@@ -44,38 +37,22 @@ async function loadData() {
       dates.push(dateStr);
 
       // 查找对应日期的数据
-      const foundAll = allUsersData.find(d => d.date === dateStr);
-      const foundVip = vipUsersData.find(d => d.date === dateStr);
-
-      allUsersCounts.push(foundAll ? foundAll.count : 0);
-      vipUsersCounts.push(foundVip ? foundVip.count : 0);
+      const found = data.find(d => d.date === dateStr);
+      counts.push(found ? found.count : 0);
     }
 
     renderEcharts({
-      visualMap: [
-        {
-          show: false,
-          type: 'continuous',
-          seriesIndex: 0,
-          dimension: 0,
-          min: 0,
-          max: dates.length - 1,
-          inRange: {
-            color: ['#e1eaff', '#4a64f1']
-          }
-        },
-        {
-          show: false,
-          type: 'continuous',
-          seriesIndex: 1,
-          dimension: 0,
-          min: 0,
-          max: dates.length - 1,
-          inRange: {
-            color: ['#fff4e6', '#f39c12']
-          }
+      visualMap: {
+        show: false,
+        type: 'continuous',
+        seriesIndex: 0,
+        dimension: 0,  // x 轴渐变
+        min: 0,
+        max: dates.length - 1,
+        inRange: {
+          color: ['#ffe5e5', '#ff6b6b']
         }
-      ],
+      },
       grid: {
         bottom: '10%',
         containLabel: true,
@@ -84,28 +61,19 @@ async function loadData() {
         top: '10%',
       },
       legend: {
-        data: ['新增用户', '新增VIP'],
+        data: ['下载次数'],
         top: '2%',
       },
       series: [
         {
-          data: allUsersCounts,
+          data: counts,
           emphasis: {
             focus: 'series',
           },
-          name: '新增用户',
-          showSymbol: false,
-          type: 'line',
-          lineStyle: {
-            width: 3
-          }
-        },
-        {
-          data: vipUsersCounts,
-          emphasis: {
-            focus: 'series',
+          markLine: {
+            data: [{ type: 'average', name: '平均值' }],
           },
-          name: '新增VIP',
+          name: '下载次数',
           showSymbol: false,
           type: 'line',
           lineStyle: {
@@ -150,7 +118,7 @@ async function loadData() {
       },
     });
   } catch (error) {
-    console.error('加载用户趋势数据失败:', error);
+    console.error('加载下载趋势数据失败:', error);
   }
 }
 

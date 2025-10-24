@@ -9,6 +9,7 @@ import type {
   // 组件类型的定义后缀都为 ComponentOption
   TitleComponentOption,
   TooltipComponentOption,
+  VisualMapComponentOption,
 } from 'echarts/components';
 import type { ComposeOption } from 'echarts/core';
 
@@ -23,6 +24,7 @@ import {
   TooltipComponent,
   // 内置数据转换器组件 (filter, sort)
   TransformComponent,
+  VisualMapComponent,
 } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { LabelLayout, UniversalTransition } from 'echarts/features';
@@ -36,6 +38,7 @@ export type ECOption = ComposeOption<
   | LineSeriesOption
   | TitleComponentOption
   | TooltipComponentOption
+  | VisualMapComponentOption
 >;
 
 // 注册必须的组件
@@ -54,6 +57,7 @@ echarts.use([
   CanvasRenderer,
   LegendComponent,
   ToolboxComponent,
+  VisualMapComponent,
 ]);
 
 export default echarts;

@@ -53,6 +53,8 @@ export {
   Pin,
   PinOff,
   Plus,
+  Pencil as Edit,
+  Trash2 as Delete,
   RotateCw,
   Search,
   SearchX,

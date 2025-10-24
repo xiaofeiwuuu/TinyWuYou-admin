@@ -90,7 +90,6 @@ async function runNitroServer(rootDir: string, port: number, verbose: boolean) {
     await build(nitro);
 
     if (verbose) {
-      console.log('');
       consola.success(colors.bold(colors.green('Nitro Mock Server started.')));
     }
   };

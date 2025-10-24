@@ -87,23 +87,17 @@ function formatDepcheckResult(pkgName: string, unused: DepcheckResult): void {
     return;
   }
 
-  console.log('\n📦 Package:', pkgName);
-
   if (Object.keys(unused.missing).length > 0) {
-    console.log('❌ Missing dependencies:');
     Object.entries(unused.missing).forEach(([dep, files]) => {
-      console.log(`  - ${dep}:`);
       files.forEach((file) => console.log(`    → ${file}`));
     });
   }
 
   if (unused.dependencies.length > 0) {
-    console.log('⚠️ Unused dependencies:');
     unused.dependencies.forEach((dep) => console.log(`  - ${dep}`));
   }
 
   if (unused.devDependencies.length > 0) {
-    console.log('⚠️ Unused devDependencies:');
     unused.devDependencies.forEach((dep) => console.log(`  - ${dep}`));
   }
 }

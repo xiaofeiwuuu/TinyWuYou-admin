@@ -28,7 +28,7 @@ const formOptions: VbenFormProps = {
       },
     },
   ],
-  wrapperClass: 'grid-cols-5',
+  wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   showCollapseButton: false,
   submitOnChange: false,
   submitOnEnter: true,
@@ -60,6 +60,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
+    rowConfig: { isCurrent: true, isHover: true },
     toolbarConfig: {
       custom: true,
       export: false,

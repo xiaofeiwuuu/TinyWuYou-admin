@@ -29,7 +29,6 @@ async function processItem(currentDir, item, targets, _depth) {
     if (targets.includes(item)) {
       // 匹配到目标目录或文件时直接删除
       await fs.rm(itemPath, { force: true, recursive: true });
-      console.log(`✅ Deleted: ${itemPath}`);
       return false; // 已删除，无需递归
     }
 
@@ -116,24 +115,14 @@ async function cleanTargetsRecursively(currentDir, targets, depth = 0) {
     cleanupTargets.push('pnpm-lock.yaml');
   }
 
-  console.log(
-    `🚀 Starting cleanup of targets: ${cleanupTargets.join(', ')} from root: ${rootDir}`,
-  );
-
   const startTime = Date.now();
 
   try {
     // 先统计要删除的目标数量
-    console.log('📊 Scanning for cleanup targets...');
-
     await cleanTargetsRecursively(rootDir, cleanupTargets);
 
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
-
-    console.log(
-      `✨ Cleanup process completed successfully in ${duration.toFixed(2)}s`,
-    );
   } catch (error) {
     console.error(`💥 Unexpected error during cleanup: ${error.message}`);
     process.exit(1);

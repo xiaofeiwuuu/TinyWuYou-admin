@@ -160,6 +160,7 @@ export function useColumns(
   }
 
   return [
+    { type: 'checkbox', width: 60 },
     {
       title: 'ID',
       field: 'id',

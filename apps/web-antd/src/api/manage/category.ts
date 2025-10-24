@@ -37,10 +37,10 @@ export namespace CategoryManageApi {
 
   /** 创建/更新分类 */
   export interface SaveParams {
-    name: string;
+    name?: string;
     description?: string;
     iconUrl?: string;
-    contentType: 'image' | 'text';
+    contentType?: 'image' | 'text';
     imageType?: ImageType;
     sortOrder?: number;
     status?: number;

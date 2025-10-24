@@ -136,6 +136,7 @@ const formOptions: VbenFormProps = {
       label: '内容类型',
       componentProps: {
         allowClear: true,
+        dropdownMatchSelectWidth: false,
         placeholder: '全部',
         options: [
           { label: '图片', value: 'image' },
@@ -149,7 +150,9 @@ const formOptions: VbenFormProps = {
       label: '图片类型',
       componentProps: {
         allowClear: true,
+        dropdownMatchSelectWidth: false,
         placeholder: '全部',
+        filterable: true,
         options: IMAGE_TYPE_OPTIONS.map(item => ({ label: item.label, value: item.value })),
       },
     },
@@ -159,6 +162,7 @@ const formOptions: VbenFormProps = {
       label: '状态',
       componentProps: {
         allowClear: true,
+        dropdownMatchSelectWidth: false,
         placeholder: '全部',
         options: [
           { label: '禁用', value: 0 },
@@ -167,7 +171,7 @@ const formOptions: VbenFormProps = {
       },
     },
   ],
-  wrapperClass: 'grid-cols-5',
+  wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   showCollapseButton: false,
   submitOnChange: false,
   submitOnEnter: true,
@@ -195,7 +199,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
       ajax: {
         query: async ({ page, sort }, formValues) => {
-          const res = await getCategoryListApi({
+          return await getCategoryListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
             keyword: formValues.keyword || undefined,
@@ -205,9 +209,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             sortBy: sort?.field,
             sortOrder: sort?.order === 'desc' ? 'DESC' : 'ASC',
           });
-          console.log('分类列表数据:', res);
-
-          return res;
         },
       },
       sort: true,
@@ -215,6 +216,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     sortConfig: {
       remote: true,
     },
+    rowConfig: { isCurrent: true, isHover: true },
     toolbarConfig: {
       custom: true,
       export: false,

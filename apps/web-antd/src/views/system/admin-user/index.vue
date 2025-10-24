@@ -11,10 +11,12 @@ import {
 } from '#/api/system/admin-user';
 import { useColumns } from './data';
 import AdminUserFormModal from './modules/form.vue';
+import ResetPasswordModal from './modules/reset-password-modal.vue';
 
 const { confirm } = Modal;
 
 const formModalRef = ref<InstanceType<typeof AdminUserFormModal>>();
+const resetPasswordModalRef = ref<InstanceType<typeof ResetPasswordModal>>();
 
 async function onStatusChange(newStatus: number, row: any) {
   const statusText: Record<string, string> = { 0: '禁用', 1: '启用' };
@@ -46,6 +48,10 @@ async function onActionClick({ code, row }: any) {
   }
   if (code === 'edit') {
     formModalRef.value?.open(row);
+    return;
+  }
+  if (code === 'resetPassword') {
+    resetPasswordModalRef.value?.open(row);
     return;
   }
   if (code === 'delete') {
@@ -82,13 +88,24 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
+    rowConfig: { isCurrent: true, isHover: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      zoom: true,
+    },
   },
   gridEvents: {},
 });
 </script>
 
 <template>
-  <Page  auto-content-height description="管理后台管理员账号,可创建多个管理员登录后台" title="管理员管理">
+  <Page
+    auto-content-height
+    description="管理后台管理员账号,可创建多个管理员登录后台"
+    title="管理员管理"
+  >
     <Grid>
       <template #toolbar-tools>
         <Button type="primary" @click="onActionClick({ code: 'add' })">
@@ -101,5 +118,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
     </Grid>
 
     <AdminUserFormModal ref="formModalRef" @success="gridApi.reload()" />
+    <ResetPasswordModal ref="resetPasswordModalRef" @success="gridApi.reload()" />
   </Page>
 </template>

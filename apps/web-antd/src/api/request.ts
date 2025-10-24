@@ -106,7 +106,6 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       let retryCount = 0;
       while (!keyManager.isKeyExchanged() && retryCount < 2) {
         try {
-          console.log(`[Request] 开始密钥交换 (尝试 ${retryCount + 1}/2)`);
           await keyManager.exchangeKey();
         } catch (error) {
           retryCount++;
@@ -131,7 +130,6 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
             aesKey,
           );
           config.data = { encrypted };
-          console.log(`[Request] ✅ 加密请求数据: ${url}`);
         } catch (error) {
           console.error('[Request] 加密失败:', error);
         }
@@ -171,7 +169,6 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
             aesKey,
           );
           response.data = JSON.parse(decryptedData);
-          console.log(`[Response] ✅ 解密响应数据: ${url}`);
         } catch (error) {
           console.error('[Response] 解密失败，清除所有缓存:', error);
           // 解密失败,清除所有缓存
@@ -194,7 +191,6 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
         // 重新进行密钥交换(使用同一个 clientId)
         try {
           await keyManager.exchangeKey();
-          console.log('[Response Error] 密钥交换成功，刷新页面');
           // 刷新页面以重新加载所有数据
           window.location.reload();
           // 返回一个永远不会 resolve 的 Promise，防止后续代码执行

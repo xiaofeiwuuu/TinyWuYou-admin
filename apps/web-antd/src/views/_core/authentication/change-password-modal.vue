@@ -50,8 +50,6 @@ async function handleConfirm() {
     }
 
     const values = await formApi.getValues();
-    console.log('表单值:', values);
-
     // 检查两次密码是否一致
     if (values.newPassword !== values.confirmPassword) {
       message.error('两次输入的新密码不一致');

@@ -34,6 +34,11 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.lock();
       const data = await formApi.getValues();
 
+      // 如果内容类型是文案,清除 imageType 字段
+      if (data.contentType === 'text') {
+        delete data.imageType;
+      }
+
       // 处理上传文件,提取 URL
       if (data.iconUrl && Array.isArray(data.iconUrl)) {
         const files = data.iconUrl;

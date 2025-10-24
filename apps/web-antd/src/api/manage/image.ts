@@ -114,3 +114,28 @@ export async function batchImportImagesApi(data: {
 }) {
   return requestClient.post('/admin/images/batch', data);
 }
+
+/**
+ * 批量更新图片
+ */
+export async function batchUpdateImagesApi(data: {
+  ids: number[];
+  updateData: {
+    categoryId?: number;
+    imageType?: ImageType;
+    isVip?: number;
+    isRecommend?: number;
+    sortOrder?: number;
+    description?: string;
+    status?: number;
+  };
+}) {
+  return requestClient.post('/admin/images/batch/update', data);
+}
+
+/**
+ * 批量删除图片
+ */
+export async function batchDeleteImagesApi(ids: number[]) {
+  return requestClient.post('/admin/images/batch/delete', { ids });
+}

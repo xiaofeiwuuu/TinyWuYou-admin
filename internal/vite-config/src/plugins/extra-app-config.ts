@@ -46,14 +46,8 @@ async function viteExtraAppConfigPlugin({
           source,
           type: 'asset',
         });
-
-        console.log(colors.cyan(`✨configuration file is build successfully!`));
       } catch (error) {
-        console.log(
-          colors.red(
-            `configuration file configuration file failed to package:\n${error}`,
-          ),
-        );
+       
       }
     },
     name: 'vite:extra-app-config',

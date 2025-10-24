@@ -36,7 +36,7 @@ const vipRenewFormRef = ref<InstanceType<typeof VipForm>>();
 
 const formOptions: VbenFormProps = {
   collapsed: false,
-  wrapperClass: 'grid-cols-5',
+  wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   schema: [
     {
       component: 'Input',
@@ -61,6 +61,7 @@ const formOptions: VbenFormProps = {
       componentProps: {
         allowClear: true,
         placeholder: '全部',
+        dropdownMatchSelectWidth: false,
         options: [
           { label: 'LV1 (0-50)', value: 1 },
           { label: 'LV2 (51-200)', value: 2 },
@@ -75,6 +76,7 @@ const formOptions: VbenFormProps = {
       label: 'VIP状态',
       componentProps: {
         allowClear: true,
+        dropdownMatchSelectWidth: false,
         placeholder: '全部',
         options: [
           { label: '非VIP', value: 0 },
@@ -365,6 +367,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       },
     },
   },
+  rowConfig: { isCurrent: true, isHover: true },
   toolbarConfig: {
     refresh: true,
     zoom: true,

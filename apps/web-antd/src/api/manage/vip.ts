@@ -33,10 +33,12 @@ export namespace VipManageApi {
 
   /** 生成VIP卡参数 */
   export interface GenerateParams {
+    cardType?: string;
     count: number;
-    days: number;
-    price: number;
-    description?: string;
+    cardDays: number;
+    downloadCount?: number;
+    cardPrice: number;
+    expireDays?: number;
   }
 
   /** 批量生成结果 */

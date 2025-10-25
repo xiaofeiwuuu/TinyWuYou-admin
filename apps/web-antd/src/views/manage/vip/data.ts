@@ -17,22 +17,6 @@ export function getVipStatusOptions() {
 export function useSchema(): VbenFormSchema[] {
   return [
     {
-      component: 'Select',
-      componentProps: {
-        placeholder: '请选择卡类型',
-        style: { width: '100%' },
-        options: [
-          { label: '月卡 (30天)', value: 'month' },
-          { label: '季卡 (90天)', value: 'quarter' },
-          { label: '年卡 (365天)', value: 'year' },
-        ],
-      },
-      fieldName: 'cardType',
-      label: '卡类型',
-      rules: z.string().min(1, '请选择卡类型'),
-      defaultValue: 'month',
-    },
-    {
       component: 'InputNumber',
       componentProps: {
         min: 1,
@@ -55,6 +39,20 @@ export function useSchema(): VbenFormSchema[] {
       fieldName: 'cardDays',
       label: 'VIP天数',
       rules: z.number().min(1, '请输入VIP天数').max(3650, '最多3650天'),
+    },
+    {
+      component: 'InputNumber',
+      componentProps: {
+        min: 0,
+        max: 999999,
+        placeholder: '输入赠送下载次数',
+        style: { width: '100%' },
+      },
+      fieldName: 'downloadCount',
+      label: '赠送下载次数',
+      help: '激活卡密后赠送的下载次数',
+      rules: z.number().min(0, '下载次数不能为负数').optional(),
+      defaultValue: 0,
     },
     {
       component: 'InputNumber',
@@ -96,23 +94,16 @@ export function useColumns(
       minWidth: 200,
     },
     {
-      title: '卡类型',
-      field: 'cardType',
-      width: 100,
-      formatter: ({ cellValue }) => {
-        const typeMap: Record<string, string> = {
-          month: '月卡',
-          quarter: '季卡',
-          year: '年卡',
-        };
-        return typeMap[cellValue] || cellValue;
-      },
-    },
-    {
       title: 'VIP天数',
       field: 'cardDays',
       width: 100,
       formatter: ({ cellValue }) => `${cellValue}天`,
+    },
+    {
+      title: '下载次数',
+      field: 'downloadCount',
+      width: 100,
+      formatter: ({ cellValue }) => cellValue || 0,
     },
     {
       title: '价格',

@@ -2,7 +2,7 @@
 import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { Page, prompt, confirm } from '@vben/common-ui';
+import { Page, prompt } from '@vben/common-ui';
 import { useAccess } from '@vben/access';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -20,6 +20,7 @@ import {
   Dropdown,
   Menu,
   MenuItem,
+  Modal,
 } from 'ant-design-vue';
 import { h, ref } from 'vue';
 import VipForm from './modules/vip-form.vue';
@@ -100,28 +101,52 @@ const formatDate = (date: string) => {
   return new Date(date).toLocaleString('zh-CN');
 };
 
-// 状态切换前的确认
-async function onStatusChange(newStatus: number, row: UserManageApi.UserInfo) {
-  const statusText: Record<string, string> = { 0: '禁用', 1: '启用' };
-  return new Promise<boolean>((resolve, reject) => {
-    confirm({
-      title: '切换状态',
-      content: `确定要将用户「${row.nickname}」的状态切换为【${statusText[newStatus]}】吗？`,
-      onOk: async () => {
-        try {
-          await toggleUserStatusApi(row.id, newStatus);
-          message.success('状态切换成功');
-          resolve(true);
-        } catch (error) {
-          message.error('状态切换失败');
-          reject(error);
-        }
-      },
-      onCancel: () => {
+/**
+ * 将Antd的Modal.confirm封装为promise，方便在异步函数中调用。
+ * @param content 提示内容
+ * @param title 提示标题
+ */
+function confirm(content: string, title: string) {
+  return new Promise((resolve, reject) => {
+    Modal.confirm({
+      content,
+      onCancel() {
         reject(new Error('已取消'));
       },
+      onOk() {
+        resolve(true);
+      },
+      title,
     });
   });
+}
+
+/**
+ * 状态开关即将改变
+ * @param newStatus 期望改变的状态值
+ * @param row 行数据
+ * @returns 返回false则中止改变，返回其他值（undefined、true）则允许改变
+ */
+async function onStatusChange(
+  newStatus: number,
+  row: UserManageApi.UserInfo,
+) {
+  const statusText: Record<string, string> = {
+    0: '禁用',
+    1: '启用',
+  };
+  try {
+    await confirm(
+      `你要将用户「${row.nickname}」的状态切换为【${statusText[newStatus.toString()]}】吗？`,
+      '切换状态',
+    );
+    await toggleUserStatusApi(row.id, newStatus);
+    message.success('状态切换成功');
+    return true;
+  } catch (error) {
+    // 用户取消操作,不显示错误
+    return false;
+  }
 }
 
 const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
@@ -236,7 +261,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       width: 100,
       cellRender: {
         name: canEdit ? 'CellSwitch' : 'CellTag',
-        attrs: canEdit ? { beforeChange: onStatusChange } : undefined,
+        attrs: { beforeChange: canEdit ? onStatusChange : undefined },
       },
     },
     {
@@ -443,30 +468,25 @@ const handleVipRenew = (row: UserManageApi.UserInfo) => {
 };
 
 // 取消VIP
-const handleVipCancel = (row: UserManageApi.UserInfo) => {
+const handleVipCancel = async (row: UserManageApi.UserInfo) => {
   const vipInfo = row.vipExpireTime
     ? `\n\n当前到期时间: ${formatDate(row.vipExpireTime)}`
     : '';
 
-  confirm({
-    title: '取消VIP',
-    content: `确定要取消用户 ${row.id} 的VIP权限吗？${vipInfo}`,
-    icon: 'warning',
-    confirmText: '确定取消',
-    cancelText: '取消',
-  })
-    .then(async () => {
-      try {
-        await cancelUserVipApi(row.id);
-        message.success('已取消VIP');
-        gridApi.reload();
-      } catch (error: any) {
-        message.error(error.message || '取消失败');
-      }
-    })
-    .catch(() => {
-      // 用户点击取消，不做任何操作
-    });
+  try {
+    await confirm(
+      `确定要取消用户 ${row.id} 的VIP权限吗？${vipInfo}`,
+      '取消VIP',
+    );
+    await cancelUserVipApi(row.id);
+    message.success('已取消VIP');
+    gridApi.reload();
+  } catch (error: any) {
+    // 用户点击取消或操作失败
+    if (error.message !== '已取消') {
+      message.error(error.message || '取消失败');
+    }
+  }
 };
 
 // 刷新列表

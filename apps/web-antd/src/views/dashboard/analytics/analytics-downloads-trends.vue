@@ -25,6 +25,10 @@ async function loadData() {
 
     const result = await getDownloadStatsByDateRangeApi(start, end);
 
+    // 调试日志:查看 API 返回的原始数据
+    console.log('下载趋势 API 返回数据:', result);
+    console.log('日期范围:', { start, end });
+
     const data = result.map(item => ({ date: item.date, count: item.downloads }));
 
     // 生成完整的30天日期列表
@@ -40,6 +44,9 @@ async function loadData() {
       const found = data.find(d => d.date === dateStr);
       counts.push(found ? found.count : 0);
     }
+
+    console.log('处理后的数据:', { dates, counts });
+    console.log('数据总数:', counts.reduce((a, b) => a + b, 0));
 
     renderEcharts({
       visualMap: {

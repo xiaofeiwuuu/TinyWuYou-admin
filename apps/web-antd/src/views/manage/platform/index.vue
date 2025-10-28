@@ -1,188 +1,403 @@
 <script lang="ts" setup>
-import { Page } from '@vben/common-ui';
+import { ref, onMounted } from 'vue';
+import { Page, useVbenForm } from '@vben/common-ui';
+import { Card, Button as AButton, message } from 'ant-design-vue';
 import {
   getPlatformListApi,
   updatePlatformsApi,
   type PlatformManageApi,
 } from '#/api/manage/platform';
-import { Card, Form, Input, Switch, Button, message } from 'ant-design-vue';
-import { ref, onMounted } from 'vue';
+import {
+  getSystemConfigListApi,
+  updateSystemConfigApi,
+} from '#/api/manage/system-config';
+import { z } from '#/adapter/form';
 
-const platformList = ref<PlatformManageApi.PlatformConfig[]>([]);
 const loading = ref(false);
-const saving = ref(false);
+const platformDisabled = ref(true);
+const configDisabled = ref(true);
+const weixinPlatform = ref<PlatformManageApi.PlatformConfig | null>(null);
 
-// 平台图标映射
-const platformIcons: Record<string, string> = {
-  weixin: '🟢',
-  xiaohongshu: '🔴',
-  douyin: '⚫',
-  alipay: '🔵',
-};
+// 微信平台配置表单
+const [PlatformForm, platformFormApi] = useVbenForm({
+  layout: 'horizontal',
+  wrapperClass: 'grid-cols-1',
+  commonConfig: {
+    componentProps: {
+      class: 'w-full',
+    },
+  },
+  schema: [
+    {
+      component: 'Input',
+      fieldName: 'platform',
+      label: '平台标识',
+      componentProps: {
+        placeholder: '平台标识',
+        disabled: true,
+      },
+      rules: z.string(),
+    },
+    {
+      component: 'Input',
+      fieldName: 'platformName',
+      label: '平台名称',
+      componentProps: {
+        placeholder: '请输入平台名称',
+        disabled: true,
+      },
+      rules: z.string(),
+    },
+    {
+      component: 'Input',
+      fieldName: 'appId',
+      label: 'AppID',
+      componentProps: {
+        placeholder: '请输入 AppID',
+        disabled: true,
+      },
+      rules: z.string(),
+    },
+    {
+      component: 'InputPassword',
+      fieldName: 'appSecret',
+      label: 'AppSecret',
+      componentProps: {
+        placeholder: '请输入 AppSecret',
+        disabled: true,
+      },
+      rules: z.string(),
+    },
+  ],
+  showDefaultActions: false,
+});
 
-// 平台颜色映射
-const platformColors: Record<string, string> = {
-  weixin: '#07c160',
-  xiaohongshu: '#ff2442',
-  douyin: '#000000',
-  alipay: '#1677ff',
-};
+// 系统配置表单
+const [ConfigForm, configFormApi] = useVbenForm({
+  layout: 'horizontal',
+  wrapperClass: 'grid-cols-1',
+  commonConfig: {
+    componentProps: {
+      class: 'w-full',
+    },
+  },
+  schema: [
+    {
+      component: 'InputNumber',
+      fieldName: 'daily_download_limit',
+      label: '普通用户每日下载限制',
+      componentProps: {
+        placeholder: '请输入下载次数限制(0为不限制)',
+        disabled: true,
+        min: 0,
+        max: 1000,
+      },
+      rules: z.number().min(0),
+    },
+    {
+      component: 'InputNumber',
+      fieldName: 'vip_daily_download_limit',
+      label: 'VIP用户每日下载限制',
+      componentProps: {
+        placeholder: '请输入下载次数限制(0为不限制)',
+        disabled: true,
+        min: 0,
+        max: 10000,
+      },
+      rules: z.number().min(0),
+    },
+  ],
+  showDefaultActions: false,
+});
 
-// 加载平台列表
-const loadPlatforms = async () => {
-  loading.value = true;
+// 加载微信平台配置
+async function loadPlatformConfig() {
   try {
     const data = await getPlatformListApi();
-    platformList.value = data;
+    const weixin = data.find((p) => p.platform === 'weixin');
+    if (weixin) {
+      weixinPlatform.value = weixin;
+      await platformFormApi.setValues({
+        platform: weixin.platform,
+        platformName: weixin.platformName,
+        appId: weixin.appId,
+        appSecret: weixin.appSecret,
+      });
+    }
   } catch (error) {
-    message.error('加载平台配置失败');
+    message.error('加载微信配置失败');
+  }
+}
+
+// 加载系统配置
+async function loadSystemConfig() {
+  try {
+    console.log('开始加载系统配置...');
+    const configs = await getSystemConfigListApi();
+    console.log('配置列表:', configs);
+
+    const dailyLimit = configs.find(
+      (c) => c.configKey === 'daily_download_limit',
+    );
+    const vipLimit = configs.find(
+      (c) => c.configKey === 'vip_daily_download_limit',
+    );
+    console.log('找到的配置 - dailyLimit:', dailyLimit, 'vipLimit:', vipLimit);
+
+    const formValues = {
+      daily_download_limit: dailyLimit ? Number(dailyLimit.configValue) : 20,
+      vip_daily_download_limit: vipLimit ? Number(vipLimit.configValue) : 0,
+    };
+    console.log('设置表单值:', formValues);
+
+    await configFormApi.setValues(formValues);
+  } catch (error) {
+    console.error('加载系统配置失败:', error);
+    message.error('加载系统配置失败');
+  }
+}
+
+// 编辑微信配置
+function handleEditPlatform() {
+  platformFormApi.setState((prev) => {
+    return {
+      schema: prev.schema?.map((item) => ({
+        ...item,
+        componentProps: {
+          ...item.componentProps,
+          disabled: item.fieldName === 'platform', // 平台标识始终禁用
+        },
+      })),
+    };
+  });
+  platformDisabled.value = false;
+}
+
+// 取消编辑微信配置
+function handleCancelPlatform() {
+  platformFormApi.setState((prev) => {
+    return {
+      schema: prev.schema?.map((item) => ({
+        ...item,
+        componentProps: {
+          ...item.componentProps,
+          disabled: true,
+        },
+      })),
+    };
+  });
+  platformDisabled.value = true;
+  loadPlatformConfig();
+}
+
+// 保存微信配置
+async function handleSavePlatform() {
+  loading.value = true;
+  try {
+    const { valid } = await platformFormApi.validate();
+    if (!valid) {
+      loading.value = false;
+      return;
+    }
+
+    const values = await platformFormApi.getValues();
+    await updatePlatformsApi([
+      {
+        platform: values.platform,
+        platformName: values.platformName,
+        appId: values.appId,
+        appSecret: values.appSecret,
+        isEnabled: weixinPlatform.value?.isEnabled || 1,
+        extraConfig: weixinPlatform.value?.extraConfig || '',
+      },
+    ]);
+    message.success('保存成功');
+
+    // 先加载新数据
+    await loadPlatformConfig();
+
+    // 加载完成后再禁用表单
+    platformFormApi.setState((prev) => {
+      return {
+        schema: prev.schema?.map((item) => ({
+          ...item,
+          componentProps: {
+            ...item.componentProps,
+            disabled: true,
+          },
+        })),
+      };
+    });
+    platformDisabled.value = true;
+  } catch (error: any) {
+    message.error(error?.message || '保存失败');
   } finally {
     loading.value = false;
   }
-};
+}
 
-// 保存所有平台配置
-const handleSaveAll = async () => {
-  saving.value = true;
+// 编辑系统配置
+function handleEditConfig() {
+  configFormApi.setState((prev) => {
+    return {
+      schema: prev.schema?.map((item) => ({
+        ...item,
+        componentProps: {
+          ...item.componentProps,
+          disabled: false,
+        },
+      })),
+    };
+  });
+  configDisabled.value = false;
+}
+
+// 取消编辑系统配置
+function handleCancelConfig() {
+  configFormApi.setState((prev) => {
+    return {
+      schema: prev.schema?.map((item) => ({
+        ...item,
+        componentProps: {
+          ...item.componentProps,
+          disabled: true,
+        },
+      })),
+    };
+  });
+  configDisabled.value = true;
+  loadSystemConfig();
+}
+
+// 保存系统配置
+async function handleSaveConfig() {
+  loading.value = true;
   try {
-    const platforms = platformList.value.map((p) => ({
-      platform: p.platform,
-      platformName: p.platformName,
-      appId: p.appId,
-      appSecret: p.appSecret,
-      isEnabled: p.isEnabled,
-      extraConfig: p.extraConfig || '',
-    }));
+    const { valid } = await configFormApi.validate();
+    if (!valid) {
+      loading.value = false;
+      return;
+    }
 
-    await updatePlatformsApi(platforms);
+    const values = await configFormApi.getValues();
+    console.log('获取到的表单值:', values);
+
+    // 确保值不为 undefined
+    const dailyLimit = values.daily_download_limit ?? 20;
+    const vipLimit = values.vip_daily_download_limit ?? 0;
+    console.log('处理后的值 - dailyLimit:', dailyLimit, 'vipLimit:', vipLimit);
+
+    // 更新普通用户限制
+    const req1 = {
+      configKey: 'daily_download_limit',
+      configValue: String(dailyLimit),
+      configDesc: '用户每日最大下载次数(0为不限制)',
+      valueType: 'number',
+    };
+    console.log('发送请求1:', req1);
+    const res1 = await updateSystemConfigApi(req1);
+    console.log('请求1响应:', res1);
+
+    // 更新VIP用户限制
+    const req2 = {
+      configKey: 'vip_daily_download_limit',
+      configValue: String(vipLimit),
+      configDesc: 'VIP用户每日最大下载次数(0为不限制)',
+      valueType: 'number',
+    };
+    console.log('发送请求2:', req2);
+    const res2 = await updateSystemConfigApi(req2);
+    console.log('请求2响应:', res2);
+
     message.success('保存成功');
-    await loadPlatforms(); // 重新加载以确保数据同步
-  } catch (error) {
-    message.error('保存失败');
+
+    console.log('重新加载配置...');
+    await loadSystemConfig();
+
+    // 加载完成后再禁用表单
+    configFormApi.setState((prev) => {
+      return {
+        schema: prev.schema?.map((item) => ({
+          ...item,
+          componentProps: {
+            ...item.componentProps,
+            disabled: true,
+          },
+        })),
+      };
+    });
+    configDisabled.value = true;
+  } catch (error: any) {
+    message.error(error?.message || '保存失败');
   } finally {
-    saving.value = false;
+    loading.value = false;
   }
-};
+}
 
 onMounted(() => {
-  loadPlatforms();
+  loadPlatformConfig();
+  loadSystemConfig();
 });
 </script>
 
 <template>
   <Page auto-content-height>
-    <div class="p-6">
-      <div class="mb-4 flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-semibold">多平台配置</h2>
-          <p class="text-sm text-gray-500 mt-1">
-            配置不同平台的 AppID 和 AppSecret,支持微信、小红书、抖音、支付宝等平台
-          </p>
-        </div>
-        <Button
-          type="primary"
-          :loading="saving"
-          @click="handleSaveAll"
-          size="large"
-        >
-          保存全部配置
-        </Button>
-      </div>
+    <div class="space-y-4">
+      <!-- 微信平台配置 -->
+      <Card title="微信小程序配置" :bordered="false">
+        <template #extra>
+          <a-button
+            v-if="platformDisabled"
+            type="primary"
+            @click="handleEditPlatform"
+          >
+            修改
+          </a-button>
+        </template>
 
-      <div v-if="loading" class="text-center py-12">
-        <div class="text-gray-400">加载中...</div>
-      </div>
+        <div class="mx-auto max-w-3xl">
+          <PlatformForm />
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          v-for="platform in platformList"
-          :key="platform.platform"
-          :bordered="false"
-          class="shadow-sm hover:shadow-md transition-shadow"
-        >
-          <template #title>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-2xl">{{ platformIcons[platform.platform] || '📱' }}</span>
-                <span class="font-semibold" :style="{ color: platformColors[platform.platform] }">
-                  {{ platform.platformName }}
-                </span>
-              </div>
-              <Switch
-                v-model:checked="platform.isEnabled"
-                :checked-value="1"
-                :un-checked-value="0"
-                checked-children="启用"
-                un-checked-children="禁用"
-              />
-            </div>
-          </template>
-
-          <Form layout="vertical">
-            <Form.Item label="平台标识">
-              <Input
-                :value="platform.platform"
-                disabled
-                placeholder="平台标识"
-              />
-            </Form.Item>
-
-            <Form.Item label="平台名称">
-              <Input
-                v-model:value="platform.platformName"
-                placeholder="请输入平台名称"
-              />
-            </Form.Item>
-
-            <Form.Item label="AppID">
-              <Input
-                v-model:value="platform.appId"
-                placeholder="请输入 AppID"
-              />
-            </Form.Item>
-
-            <Form.Item label="AppSecret">
-              <Input.Password
-                v-model:value="platform.appSecret"
-                placeholder="请输入 AppSecret"
-              />
-            </Form.Item>
-
-            <Form.Item label="额外配置 (JSON格式)" v-if="false">
-              <Input.TextArea
-                v-model:value="platform.extraConfig"
-                :rows="3"
-                placeholder='{"key": "value"}'
-              />
-            </Form.Item>
-          </Form>
-
-          <div class="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
-            <div>创建时间: {{ new Date(platform.createdAt).toLocaleString('zh-CN') }}</div>
-            <div>更新时间: {{ new Date(platform.updatedAt).toLocaleString('zh-CN') }}</div>
+          <div v-if="!platformDisabled" class="mt-4 flex gap-2">
+            <a-button
+              type="primary"
+              :loading="loading"
+              @click="handleSavePlatform"
+            >
+              保存配置
+            </a-button>
+            <a-button @click="handleCancelPlatform"> 取消 </a-button>
           </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
 
-      <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h3 class="font-semibold text-blue-900 mb-2">💡 使用说明</h3>
-        <ul class="text-sm text-blue-800 space-y-1">
-          <li>• 配置保存后会自动更新后端 .env 文件中的环境变量</li>
-          <li>• 环境变量格式: WEIXIN_APPID, XIAOHONGSHU_APPID, DOUYIN_APPID, ALIPAY_APPID</li>
-          <li>• 禁用的平台不会影响已有配置,只是不会在小程序中使用</li>
-          <li>• 建议在测试环境验证配置后再应用到生产环境</li>
-        </ul>
-      </div>
+      <!-- 系统配置 -->
+      <Card title="系统配置" :bordered="false">
+        <template #extra>
+          <a-button
+            v-if="configDisabled"
+            type="primary"
+            @click="handleEditConfig"
+          >
+            修改
+          </a-button>
+        </template>
+
+        <div class="mx-auto max-w-3xl">
+          <ConfigForm />
+
+          <div v-if="!configDisabled" class="mt-4 flex gap-2">
+            <a-button
+              type="primary"
+              :loading="loading"
+              @click="handleSaveConfig"
+            >
+              保存配置
+            </a-button>
+            <a-button @click="handleCancelConfig"> 取消 </a-button>
+          </div>
+        </div>
+      </Card>
     </div>
   </Page>
 </template>
-
-<style scoped>
-:deep(.ant-card-head) {
-  border-bottom: 2px solid #f0f0f0;
-}
-
-:deep(.ant-form-item-label > label) {
-  font-weight: 500;
-}
-</style>

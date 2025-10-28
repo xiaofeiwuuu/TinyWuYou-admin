@@ -32,6 +32,8 @@ const [Modal, modalApi] = useVbenModal({
     if (valid) {
       modalApi.lock();
       const data = await formApi.getValues();
+      console.log(123, data);
+      
       try {
         const result = await generateVipCardsApi(data as VipManageApi.GenerateParams);
         message.success(`成功生成 ${result.count} 张VIP卡`);

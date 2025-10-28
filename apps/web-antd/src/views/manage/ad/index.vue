@@ -95,7 +95,13 @@ function handleCancel() {
 async function handleSave() {
   loading.value = true;
   try {
-    const values = await formApi.validate();
+    const { valid } = await formApi.validate();
+    if (!valid) {
+      loading.value = false;
+      return;
+    }
+
+    const values = await formApi.getValues();
     await updateAdConfigApi(values);
     message.success('保存成功');
     // 禁用表单

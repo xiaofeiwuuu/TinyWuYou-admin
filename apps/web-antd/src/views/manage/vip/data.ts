@@ -1,4 +1,5 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
+
 import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { VipManageApi } from '#/api/manage/vip';
@@ -26,7 +27,10 @@ export function useSchema(): VbenFormSchema[] {
       },
       fieldName: 'count',
       label: '生成数量',
-      rules: z.number().min(1, '请输入生成数量').max(1000, '一次最多生成1000张'),
+      rules: z
+        .number()
+        .min(1, '请输入生成数量')
+        .max(1000, '一次最多生成1000张'),
     },
     {
       component: 'InputNumber',
@@ -44,7 +48,7 @@ export function useSchema(): VbenFormSchema[] {
       component: 'InputNumber',
       componentProps: {
         min: 0,
-        max: 999999,
+        max: 999_999,
         placeholder: '输入赠送下载次数',
         style: { width: '100%' },
       },
@@ -168,12 +172,14 @@ export function useColumns(
           onClick: onActionClick,
         },
         name: 'CellOperation',
-        options: canDelete ? [
-          {
-            code: 'delete',
-            disabled: (row: VipManageApi.VipCardInfo) => row.status !== 0,
-          },
-        ] : [],
+        options: canDelete
+          ? [
+              {
+                code: 'delete',
+                disabled: (row: VipManageApi.VipCardInfo) => row.status !== 0,
+              },
+            ]
+          : [],
       },
       field: 'operation',
       fixed: 'right',

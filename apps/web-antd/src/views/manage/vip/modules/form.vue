@@ -32,10 +32,11 @@ const [Modal, modalApi] = useVbenModal({
     if (valid) {
       modalApi.lock();
       const data = await formApi.getValues();
-      console.log(123, data);
-      
+
       try {
-        const result = await generateVipCardsApi(data as VipManageApi.GenerateParams);
+        const result = await generateVipCardsApi(
+          data as VipManageApi.GenerateParams,
+        );
         message.success(`成功生成 ${result.count} 张VIP卡`);
         modalApi.close();
         emit('success');
@@ -57,9 +58,7 @@ const [Modal, modalApi] = useVbenModal({
     <Form class="mx-4" />
     <template #prepend-footer>
       <div class="flex-auto">
-        <Button type="primary" danger @click="resetForm">
-          重置
-        </Button>
+        <Button type="primary" danger @click="resetForm"> 重置 </Button>
       </div>
     </template>
   </Modal>

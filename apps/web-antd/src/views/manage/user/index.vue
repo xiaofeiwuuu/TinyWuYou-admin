@@ -1,28 +1,32 @@
 <script lang="ts" setup>
 import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { UserManageApi } from '#/api/manage/user';
 
-import { Page, prompt } from '@vben/common-ui';
+import { h, ref } from 'vue';
+
 import { useAccess } from '@vben/access';
+import { Page, prompt } from '@vben/common-ui';
+
+import {
+  Dropdown,
+  Input,
+  InputNumber,
+  Menu,
+  MenuItem,
+  message,
+  Modal,
+} from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
+  cancelUserVipApi,
   getUserListApi,
   toggleUserStatusApi,
   updateUserDownloadCountApi,
   updateUserRemarkApi,
-  cancelUserVipApi,
-  type UserManageApi,
 } from '#/api/manage/user';
-import {
-  Input,
-  InputNumber,
-  message,
-  Dropdown,
-  Menu,
-  MenuItem,
-  Modal,
-} from 'ant-design-vue';
-import { h, ref } from 'vue';
+
 import VipForm from './modules/vip-form.vue';
 
 const { TextArea } = Input;
@@ -127,10 +131,7 @@ function confirm(content: string, title: string) {
  * @param row 行数据
  * @returns 返回false则中止改变，返回其他值（undefined、true）则允许改变
  */
-async function onStatusChange(
-  newStatus: number,
-  row: UserManageApi.UserInfo,
-) {
+async function onStatusChange(newStatus: number, row: UserManageApi.UserInfo) {
   const statusText: Record<string, string> = {
     0: '禁用',
     1: '启用',
@@ -143,7 +144,7 @@ async function onStatusChange(
     await toggleUserStatusApi(row.id, newStatus);
     message.success('状态切换成功');
     return true;
-  } catch (error) {
+  } catch {
     // 用户取消操作,不显示错误
     return false;
   }
@@ -176,7 +177,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
         default: ({ row }) => {
           const platformMap: Record<
             string,
-            { name: string; color: string; icon: string }
+            { color: string; icon: string; name: string }
           > = {
             weixin: { name: '微信', color: '#07c160', icon: '🟢' },
             xiaohongshu: { name: '小红书', color: '#ff2442', icon: '🔴' },
@@ -208,7 +209,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
           return h(
             'span',
             {
-              class: 'ant-tag ant-tag-' + color,
+              class: `ant-tag ant-tag-${color}`,
               style: { borderRadius: '2px' },
             },
             `LV${row.userLevel}`,
@@ -229,7 +230,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
             return h(
               'span',
               { class: 'ant-tag ant-tag-gold' },
-              'VIP' + expireText,
+              `VIP${expireText}`,
             );
           }
           return h('span', { class: 'ant-tag' }, '普通');

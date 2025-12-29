@@ -1,4 +1,5 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
+
 import type { InvitationManageApi } from '#/api/manage/invitation';
 
 export function useColumns(): VxeTableGridOptions<InvitationManageApi.InvitationInfo>['columns'] {

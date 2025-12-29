@@ -1,4 +1,5 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
+
 import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { TaskManageApi } from '#/api/manage/task';
@@ -39,7 +40,10 @@ export function useSchema(): VbenFormSchema[] {
       },
       fieldName: 'taskType',
       label: '任务类型',
-      rules: z.string().min(1, '请输入任务类型').max(20, '任务类型不能超过20个字符'),
+      rules: z
+        .string()
+        .min(1, '请输入任务类型')
+        .max(20, '任务类型不能超过20个字符'),
     },
     {
       component: 'Input',
@@ -49,7 +53,10 @@ export function useSchema(): VbenFormSchema[] {
       },
       fieldName: 'taskName',
       label: '任务名称',
-      rules: z.string().min(1, '请输入任务名称').max(50, '任务名称不能超过50个字符'),
+      rules: z
+        .string()
+        .min(1, '请输入任务名称')
+        .max(50, '任务名称不能超过50个字符'),
     },
     {
       component: 'Textarea',
@@ -58,7 +65,7 @@ export function useSchema(): VbenFormSchema[] {
         placeholder: '请输入任务描述',
         rows: 3,
         showCount: true,
-        class: 'w-full'
+        class: 'w-full',
       },
       fieldName: 'taskDesc',
       label: '任务描述',
@@ -137,7 +144,10 @@ export function useSchema(): VbenFormSchema[] {
 
 export function useColumns(
   onActionClick?: OnActionClickFn<TaskManageApi.TaskInfo>,
-  onStatusChange?: (newStatus: any, row: TaskManageApi.TaskInfo) => PromiseLike<boolean | undefined>,
+  onStatusChange?: (
+    newStatus: any,
+    row: TaskManageApi.TaskInfo,
+  ) => PromiseLike<boolean | undefined>,
   canEdit?: boolean,
   canDelete?: boolean,
 ): VxeTableGridOptions<TaskManageApi.TaskInfo>['columns'] {
@@ -178,7 +188,8 @@ export function useColumns(
       title: '每日上限',
       field: 'dailyLimit',
       width: 100,
-      formatter: ({ cellValue }) => cellValue === 0 ? '不限' : `${cellValue}次`,
+      formatter: ({ cellValue }) =>
+        cellValue === 0 ? '不限' : `${cellValue}次`,
     },
     {
       title: '刷新类型',

@@ -1,4 +1,5 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
+
 import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { AdminUserApi } from '#/api/system/admin-user';
@@ -24,7 +25,10 @@ export function useSchema(isEdit: boolean = false): VbenFormSchema[] {
       },
       fieldName: 'username',
       label: '用户名',
-      rules: z.string().min(3, '用户名至少3个字符').max(50, '用户名不能超过50个字符'),
+      rules: z
+        .string()
+        .min(3, '用户名至少3个字符')
+        .max(50, '用户名不能超过50个字符'),
     },
     {
       component: 'Input',
@@ -33,7 +37,10 @@ export function useSchema(isEdit: boolean = false): VbenFormSchema[] {
       },
       fieldName: 'realName',
       label: '真实姓名',
-      rules: z.string().min(2, '真实姓名至少2个字符').max(50, '真实姓名不能超过50个字符'),
+      rules: z
+        .string()
+        .min(2, '真实姓名至少2个字符')
+        .max(50, '真实姓名不能超过50个字符'),
     },
     {
       component: 'RadioGroup',
@@ -68,7 +75,10 @@ export function useSchema(isEdit: boolean = false): VbenFormSchema[] {
       },
       fieldName: 'phone',
       label: '手机号',
-      rules: z.string().regex(/^1[3-9]\d{9}$/, '请输入正确的手机号').optional(),
+      rules: z
+        .string()
+        .regex(/^1[3-9]\d{9}$/, '请输入正确的手机号')
+        .optional(),
     },
   ];
 
@@ -80,7 +90,10 @@ export function useSchema(isEdit: boolean = false): VbenFormSchema[] {
       },
       fieldName: 'password',
       label: '密码',
-      rules: z.string().min(6, '密码至少6个字符').max(50, '密码不能超过50个字符'),
+      rules: z
+        .string()
+        .min(6, '密码至少6个字符')
+        .max(50, '密码不能超过50个字符'),
     });
   }
 

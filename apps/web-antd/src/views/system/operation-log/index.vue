@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { Page } from '@vben/common-ui';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getOperationLogListApi } from '#/api/system/operation-log';
+
 import { useColumns, useFormSchema } from './data';
 
-const [Grid, gridApi] = useVbenVxeGrid({
+const [Grid] = useVbenVxeGrid({
   formOptions: useFormSchema(),
   gridOptions: {
     columns: useColumns(),

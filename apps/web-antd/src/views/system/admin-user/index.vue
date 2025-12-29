@@ -1,14 +1,18 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+
 import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+
 import { Button, message, Modal } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteAdminUserApi,
   getAdminUserListApi,
   updateAdminStatusApi,
 } from '#/api/system/admin-user';
+
 import { useColumns } from './data';
 import AdminUserFormModal from './modules/form.vue';
 import ResetPasswordModal from './modules/reset-password-modal.vue';
@@ -118,6 +122,9 @@ const [Grid, gridApi] = useVbenVxeGrid({
     </Grid>
 
     <AdminUserFormModal ref="formModalRef" @success="gridApi.reload()" />
-    <ResetPasswordModal ref="resetPasswordModalRef" @success="gridApi.reload()" />
+    <ResetPasswordModal
+      ref="resetPasswordModalRef"
+      @success="gridApi.reload()"
+    />
   </Page>
 </template>

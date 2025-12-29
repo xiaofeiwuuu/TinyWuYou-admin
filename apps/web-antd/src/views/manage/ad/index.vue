@@ -1,9 +1,12 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+
 import { Page, useVbenForm } from '@vben/common-ui';
-import { Card, Button as AButton, message } from 'ant-design-vue';
-import { getAdConfigApi, updateAdConfigApi } from '#/api/manage/ad';
+
+import { Button as AButton, Card, message } from 'ant-design-vue';
+
 import { z } from '#/adapter/form';
+import { getAdConfigApi, updateAdConfigApi } from '#/api/manage/ad';
 
 const loading = ref(false);
 const disabled = ref(true);
@@ -56,7 +59,7 @@ async function loadConfig() {
     const res = await getAdConfigApi();
     await formApi.setValues(res);
     disabled.value = true;
-  } catch (error) {
+  } catch {
     message.error('加载配置失败');
   }
 }
@@ -138,21 +141,19 @@ onMounted(() => {
   <Page auto-content-height>
     <Card title="广告配置" :bordered="false">
       <template #extra>
-        <a-button v-if="disabled" type="primary" @click="handleEdit">
+        <AButton v-if="disabled" type="primary" @click="handleEdit">
           修改
-        </a-button>
+        </AButton>
       </template>
 
       <div class="mx-auto max-w-3xl">
         <Form />
 
         <div v-if="!disabled" class="mt-4 flex gap-2">
-          <a-button type="primary" :loading="loading" @click="handleSave">
+          <AButton type="primary" :loading="loading" @click="handleSave">
             保存配置
-          </a-button>
-          <a-button @click="handleCancel">
-            取消
-          </a-button>
+          </AButton>
+          <AButton @click="handleCancel"> 取消 </AButton>
         </div>
       </div>
     </Card>

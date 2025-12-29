@@ -1,19 +1,21 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 import type { MiniProgramManageApi } from '#/api/manage/miniprogram';
-import type { VbenFormProps } from '#/adapter/form';
 
-import { Page, useVbenModal } from '@vben/common-ui';
 import { useAccess } from '@vben/access';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+
 import { Button, message, Modal } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  getMiniProgramListApi,
   deleteMiniProgramApi,
+  getMiniProgramListApi,
   updateMiniProgramApi,
 } from '#/api/manage/miniprogram';
 
@@ -47,7 +49,7 @@ async function onDelete(row: MiniProgramManageApi.MiniProgramInfo) {
       key: 'action_process_msg',
     });
     refreshGrid();
-  } catch (error) {
+  } catch {
     hideLoading();
     message.error('删除失败');
   }
@@ -131,7 +133,12 @@ const formOptions: VbenFormProps = {
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
-    columns: useColumns(onActionClick, canEdit ? onStatusChange : undefined, canEdit, canDelete),
+    columns: useColumns(
+      onActionClick,
+      canEdit ? onStatusChange : undefined,
+      canEdit,
+      canDelete,
+    ),
     height: 'auto',
     keepSource: true,
     pagerConfig: {
@@ -144,7 +151,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         total: 'total',
       },
       ajax: {
-        query: async ({ page }, formValues) => {
+        query: async ({ page }) => {
           const res = await getMiniProgramListApi({
             page: page.currentPage,
             pageSize: page.pageSize,

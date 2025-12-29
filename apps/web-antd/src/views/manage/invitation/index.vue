@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { VbenFormProps } from '#/adapter/form';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { Page } from '@vben/common-ui';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getInvitationListApi } from '#/api/manage/invitation';
 
@@ -34,7 +35,7 @@ const formOptions: VbenFormProps = {
   submitOnEnter: true,
 };
 
-const [Grid, gridApi] = useVbenVxeGrid({
+const [Grid] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
     columns: useColumns(),

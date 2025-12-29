@@ -2,10 +2,17 @@
 import type { MiniProgramManageApi } from '#/api/manage/miniprogram';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
-import { createMiniProgramApi, updateMiniProgramApi } from '#/api/manage/miniprogram';
+import {
+  createMiniProgramApi,
+  updateMiniProgramApi,
+} from '#/api/manage/miniprogram';
+
 import { useSchema } from '../data';
 
 const emit = defineEmits(['success']);
@@ -43,7 +50,7 @@ const [Modal, modalApi] = useVbenModal({
         if (url && url.includes('://')) {
           try {
             url = new URL(url).pathname;
-          } catch (e) {
+          } catch {
             console.warn('解析URL失败，使用原始值:', url);
           }
         }
@@ -52,7 +59,10 @@ const [Modal, modalApi] = useVbenModal({
 
       try {
         await (formData.value?.id
-          ? updateMiniProgramApi(formData.value.id, data as MiniProgramManageApi.SaveParams)
+          ? updateMiniProgramApi(
+              formData.value.id,
+              data as MiniProgramManageApi.SaveParams,
+            )
           : createMiniProgramApi(data as MiniProgramManageApi.SaveParams));
         modalApi.close();
         emit('success');

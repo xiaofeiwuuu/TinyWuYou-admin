@@ -1,22 +1,23 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import type { PlatformManageApi } from '#/api/manage/platform';
+
+import { onMounted, ref } from 'vue';
+
 import { Page, useVbenForm } from '@vben/common-ui';
-import { Card, Button as AButton, message } from 'ant-design-vue';
-import {
-  getPlatformListApi,
-  updatePlatformsApi,
-  type PlatformManageApi,
-} from '#/api/manage/platform';
+
+import { Button as AButton, Card, message } from 'ant-design-vue';
+
+import { z } from '#/adapter/form';
+import { getPlatformListApi, updatePlatformsApi } from '#/api/manage/platform';
 import {
   getSystemConfigListApi,
   updateSystemConfigApi,
 } from '#/api/manage/system-config';
-import { z } from '#/adapter/form';
 
 const loading = ref(false);
 const platformDisabled = ref(true);
 const configDisabled = ref(true);
-const weixinPlatform = ref<PlatformManageApi.PlatformConfig | null>(null);
+const weixinPlatform = ref<null | PlatformManageApi.PlatformConfig>(null);
 
 // 微信平台配置表单
 const [PlatformForm, platformFormApi] = useVbenForm({
@@ -102,7 +103,7 @@ const [ConfigForm, configFormApi] = useVbenForm({
         placeholder: '请输入下载次数限制(0为不限制)',
         disabled: true,
         min: 0,
-        max: 10000,
+        max: 10_000,
       },
       rules: z.number().min(0),
     },
@@ -124,7 +125,7 @@ async function loadPlatformConfig() {
         appSecret: weixin.appSecret,
       });
     }
-  } catch (error) {
+  } catch {
     message.error('加载微信配置失败');
   }
 }
@@ -132,24 +133,17 @@ async function loadPlatformConfig() {
 // 加载系统配置
 async function loadSystemConfig() {
   try {
-    console.log('开始加载系统配置...');
     const configs = await getSystemConfigListApi();
-    console.log('配置列表:', configs);
-
     const dailyLimit = configs.find(
       (c) => c.configKey === 'daily_download_limit',
     );
     const vipLimit = configs.find(
       (c) => c.configKey === 'vip_daily_download_limit',
     );
-    console.log('找到的配置 - dailyLimit:', dailyLimit, 'vipLimit:', vipLimit);
-
     const formValues = {
       daily_download_limit: dailyLimit ? Number(dailyLimit.configValue) : 20,
       vip_daily_download_limit: vipLimit ? Number(vipLimit.configValue) : 0,
     };
-    console.log('设置表单值:', formValues);
-
     await configFormApi.setValues(formValues);
   } catch (error) {
     console.error('加载系统配置失败:', error);
@@ -280,12 +274,10 @@ async function handleSaveConfig() {
     }
 
     const values = await configFormApi.getValues();
-    console.log('获取到的表单值:', values);
 
     // 确保值不为 undefined
     const dailyLimit = values.daily_download_limit ?? 20;
     const vipLimit = values.vip_daily_download_limit ?? 0;
-    console.log('处理后的值 - dailyLimit:', dailyLimit, 'vipLimit:', vipLimit);
 
     // 更新普通用户限制
     const req1 = {
@@ -294,9 +286,7 @@ async function handleSaveConfig() {
       configDesc: '用户每日最大下载次数(0为不限制)',
       valueType: 'number',
     };
-    console.log('发送请求1:', req1);
-    const res1 = await updateSystemConfigApi(req1);
-    console.log('请求1响应:', res1);
+    await updateSystemConfigApi(req1);
 
     // 更新VIP用户限制
     const req2 = {
@@ -305,13 +295,10 @@ async function handleSaveConfig() {
       configDesc: 'VIP用户每日最大下载次数(0为不限制)',
       valueType: 'number',
     };
-    console.log('发送请求2:', req2);
-    const res2 = await updateSystemConfigApi(req2);
-    console.log('请求2响应:', res2);
+    await updateSystemConfigApi(req2);
 
     message.success('保存成功');
 
-    console.log('重新加载配置...');
     await loadSystemConfig();
 
     // 加载完成后再禁用表单
@@ -346,27 +333,27 @@ onMounted(() => {
       <!-- 微信平台配置 -->
       <Card title="微信小程序配置" :bordered="false">
         <template #extra>
-          <a-button
+          <AButton
             v-if="platformDisabled"
             type="primary"
             @click="handleEditPlatform"
           >
             修改
-          </a-button>
+          </AButton>
         </template>
 
         <div class="mx-auto max-w-3xl">
           <PlatformForm />
 
           <div v-if="!platformDisabled" class="mt-4 flex gap-2">
-            <a-button
+            <AButton
               type="primary"
               :loading="loading"
               @click="handleSavePlatform"
             >
               保存配置
-            </a-button>
-            <a-button @click="handleCancelPlatform"> 取消 </a-button>
+            </AButton>
+            <AButton @click="handleCancelPlatform"> 取消 </AButton>
           </div>
         </div>
       </Card>
@@ -374,27 +361,27 @@ onMounted(() => {
       <!-- 系统配置 -->
       <Card title="系统配置" :bordered="false">
         <template #extra>
-          <a-button
+          <AButton
             v-if="configDisabled"
             type="primary"
             @click="handleEditConfig"
           >
             修改
-          </a-button>
+          </AButton>
         </template>
 
         <div class="mx-auto max-w-3xl">
           <ConfigForm />
 
           <div v-if="!configDisabled" class="mt-4 flex gap-2">
-            <a-button
+            <AButton
               type="primary"
               :loading="loading"
               @click="handleSaveConfig"
             >
               保存配置
-            </a-button>
-            <a-button @click="handleCancelConfig"> 取消 </a-button>
+            </AButton>
+            <AButton @click="handleCancelConfig"> 取消 </AButton>
           </div>
         </div>
       </Card>

@@ -1,11 +1,12 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
+
 import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { ImageManageApi } from '#/api/manage/image';
 
 import { z } from '#/adapter/form';
-import { getCategoryListApi } from '#/api/manage/category';
 import { uploadFile } from '#/api/core/upload';
+import { getCategoryListApi } from '#/api/manage/category';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
 
 export function getImageTypeOptions() {
@@ -18,7 +19,10 @@ export function useSchema(): VbenFormSchema[] {
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
-        options: IMAGE_TYPE_OPTIONS.map(item => ({ label: item.label, value: item.value })),
+        options: IMAGE_TYPE_OPTIONS.map((item) => ({
+          label: item.label,
+          value: item.value,
+        })),
         optionType: 'button',
       },
       defaultValue: 'avatar',
@@ -41,10 +45,13 @@ export function useSchema(): VbenFormSchema[] {
               contentType: 'image',
               imageType: values.imageType,
               page: 1,
-              pageSize: 100
+              pageSize: 100,
             });
             return {
-              options: res.list.map((item) => ({ label: item.name, value: item.id })),
+              options: res.list.map((item) => ({
+                label: item.name,
+                value: item.id,
+              })),
             };
           }
           return { options: [] };

@@ -1,20 +1,19 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 import type { VipManageApi } from '#/api/manage/vip';
-import type { VbenFormProps } from '#/adapter/form';
 
-import { Page, useVbenModal } from '@vben/common-ui';
 import { useAccess } from '@vben/access';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+
 import { Button, message } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  getVipCardListApi,
-  deleteVipCardApi,
-} from '#/api/manage/vip';
+import { deleteVipCardApi, getVipCardListApi } from '#/api/manage/vip';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
@@ -42,7 +41,7 @@ async function onDelete(row: VipManageApi.VipCardInfo) {
       key: 'action_process_msg',
     });
     refreshGrid();
-  } catch (error) {
+  } catch {
     hideLoading();
     message.error('删除失败');
   }
@@ -116,7 +115,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
             page: page.currentPage,
             pageSize: page.pageSize,
             keyword: formValues.keyword || undefined,
-            isUsed: formValues.isUsed !== undefined && formValues.isUsed !== '' ? Number(formValues.isUsed) : undefined,
+            isUsed:
+              formValues.isUsed !== undefined && formValues.isUsed !== ''
+                ? Number(formValues.isUsed)
+                : undefined,
           });
         },
       },

@@ -1,17 +1,20 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button, message } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
-import { batchUpdateCategoryApi } from '#/api/manage/text';
 import { getCategoryListApi } from '#/api/manage/category';
+import { batchUpdateCategoryApi } from '#/api/manage/text';
 
 const emit = defineEmits(['success']);
 
 // 表单数据
 const batchData = ref<{
-  selectedIds: number[];
   selectedCount: number;
+  selectedIds: number[];
 }>({
   selectedIds: [],
   selectedCount: 0,
@@ -54,12 +57,14 @@ const [Modal, modalApi] = useVbenModal({
       try {
         await batchUpdateCategoryApi(
           batchData.value.selectedIds,
-          Number(data.categoryId)
+          Number(data.categoryId),
         );
-        message.success(`成功修改 ${batchData.value.selectedCount} 条文案的分类`);
+        message.success(
+          `成功修改 ${batchData.value.selectedCount} 条文案的分类`,
+        );
         modalApi.close();
         emit('success');
-      } catch (error) {
+      } catch {
         message.error('批量修改失败');
       } finally {
         modalApi.lock(false);
@@ -69,8 +74,8 @@ const [Modal, modalApi] = useVbenModal({
   onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<{
-        selectedIds: number[];
         selectedCount: number;
+        selectedIds: number[];
       }>();
       if (data) {
         batchData.value = data;
@@ -78,7 +83,9 @@ const [Modal, modalApi] = useVbenModal({
       }
     }
   },
-  title: computed(() => `批量修改分类 (已选择 ${batchData.value.selectedCount} 条)`),
+  title: computed(
+    () => `批量修改分类 (已选择 ${batchData.value.selectedCount} 条)`,
+  ),
 });
 </script>
 
@@ -86,7 +93,9 @@ const [Modal, modalApi] = useVbenModal({
   <Modal>
     <div class="mb-4 rounded bg-blue-50 p-3 text-blue-700">
       <p class="text-sm">
-        将对选中的 <strong>{{ batchData.selectedCount }}</strong> 条文案进行批量修改分类操作
+        将对选中的
+        <strong>{{ batchData.selectedCount }}</strong>
+        条文案进行批量修改分类操作
       </p>
     </div>
 

@@ -2,15 +2,18 @@
 import type { VbenFormSchema } from '#/adapter/form';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button, message } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
-import { batchUpdateImagesApi } from '#/api/manage/image';
 import { getCategoryListApi } from '#/api/manage/category';
+import { batchUpdateImagesApi } from '#/api/manage/image';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
 
 const emit = defineEmits(['success']);
-const batchData = ref<{ selectedIds: number[]; selectedCount: number }>();
+const batchData = ref<{ selectedCount: number; selectedIds: number[] }>();
 
 const getTitle = computed(() => {
   return `批量编辑图片 (已选择 ${batchData.value?.selectedCount || 0} 张)`;
@@ -25,7 +28,10 @@ const [Form, formApi] = useVbenForm({
         buttonStyle: 'solid',
         options: [
           { label: '保持不变', value: undefined },
-          ...IMAGE_TYPE_OPTIONS.map(item => ({ label: item.label, value: item.value })),
+          ...IMAGE_TYPE_OPTIONS.map((item) => ({
+            label: item.label,
+            value: item.value,
+          })),
         ],
         optionType: 'button',
       },
@@ -48,19 +54,25 @@ const [Form, formApi] = useVbenForm({
               contentType: 'image',
               imageType: values.imageType,
               page: 1,
-              pageSize: 100
+              pageSize: 100,
             });
             return {
-              options: res.list.map((item) => ({ label: item.name, value: item.id })),
+              options: res.list.map((item) => ({
+                label: item.name,
+                value: item.id,
+              })),
             };
           }
           const res = await getCategoryListApi({
             contentType: 'image',
             page: 1,
-            pageSize: 100
+            pageSize: 100,
           });
           return {
-            options: res.list.map((item) => ({ label: item.name, value: item.id })),
+            options: res.list.map((item) => ({
+              label: item.name,
+              value: item.id,
+            })),
           };
         },
         triggerFields: ['imageType'],
@@ -177,7 +189,11 @@ const [Modal, modalApi] = useVbenModal({
       if (values.sortOrder !== undefined && values.sortOrder !== null) {
         updateData.sortOrder = values.sortOrder;
       }
-      if (values.description !== undefined && values.description !== null && values.description !== '') {
+      if (
+        values.description !== undefined &&
+        values.description !== null &&
+        values.description !== ''
+      ) {
         updateData.description = values.description;
       }
       if (values.status !== undefined && values.status !== null) {
@@ -209,7 +225,10 @@ const [Modal, modalApi] = useVbenModal({
   },
   onOpenChange(isOpen) {
     if (isOpen) {
-      const data = modalApi.getData<{ selectedIds: number[]; selectedCount: number }>();
+      const data = modalApi.getData<{
+        selectedCount: number;
+        selectedIds: number[];
+      }>();
       if (data) {
         batchData.value = data;
       }

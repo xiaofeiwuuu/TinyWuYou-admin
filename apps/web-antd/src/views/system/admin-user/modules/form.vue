@@ -2,10 +2,17 @@
 import type { AdminUserApi } from '#/api/system/admin-user';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { message } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
-import { createAdminUserApi, updateAdminUserApi } from '#/api/system/admin-user';
+import {
+  createAdminUserApi,
+  updateAdminUserApi,
+} from '#/api/system/admin-user';
+
 import { useSchema } from '../data';
 
 const emit = defineEmits(['success']);

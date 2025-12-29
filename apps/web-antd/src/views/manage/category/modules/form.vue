@@ -2,10 +2,14 @@
 import type { CategoryManageApi } from '#/api/manage/category';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
 import { createCategoryApi, updateCategoryApi } from '#/api/manage/category';
+
 import { useSchema } from '../data';
 
 const emit = defineEmits(['success']);
@@ -49,7 +53,7 @@ const [Modal, modalApi] = useVbenModal({
         if (url && url.includes('://')) {
           try {
             url = new URL(url).pathname;
-          } catch (e) {
+          } catch {
             console.warn('解析URL失败，使用原始值:', url);
           }
         }
@@ -58,7 +62,10 @@ const [Modal, modalApi] = useVbenModal({
 
       try {
         await (formData.value?.id
-          ? updateCategoryApi(formData.value.id, data as CategoryManageApi.SaveParams)
+          ? updateCategoryApi(
+              formData.value.id,
+              data as CategoryManageApi.SaveParams,
+            )
           : createCategoryApi(data as CategoryManageApi.SaveParams));
         modalApi.close();
         emit('success');

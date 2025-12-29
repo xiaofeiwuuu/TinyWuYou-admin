@@ -1,28 +1,31 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 import type { TextManageApi } from '#/api/manage/text';
-import type { VbenFormProps } from '#/adapter/form';
 
-import { Page, useVbenModal } from '@vben/common-ui';
+import { computed, onMounted, ref } from 'vue';
+
 import { useAccess } from '@vben/access';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
-import { Button, message, Modal as AModal } from 'ant-design-vue';
+
+import { Modal as AModal, Button, message } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { onMounted, ref, computed } from 'vue';
+import { getCategoryListApi } from '#/api/manage/category';
 import {
-  getTextListApi,
-  deleteTextApi,
   auditTextApi,
   batchDeleteTextsApi,
+  deleteTextApi,
+  getTextListApi,
 } from '#/api/manage/text';
-import { getCategoryListApi } from '#/api/manage/category';
 
 import { useColumns } from './data';
-import Form from './modules/form.vue';
 import BatchEditForm from './modules/batch-edit-form.vue';
+import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
@@ -55,7 +58,11 @@ const categories = ref<any[]>([]);
 
 const loadCategories = async () => {
   try {
-    const res = await getCategoryListApi({ contentType: 'text', page: 1, pageSize: 100 });
+    const res = await getCategoryListApi({
+      contentType: 'text',
+      page: 1,
+      pageSize: 100,
+    });
     categories.value = res.list.map((item) => ({
       label: item.name,
       value: item.id,
@@ -82,16 +89,11 @@ function onBatchEdit() {
   // 实时获取选中的记录
   const $grid = gridApi.grid;
   if ($grid) {
-    const selectRecords = $grid.getCheckboxRecords() as TextManageApi.TextInfo[];
-    const reserveRecords = $grid.getCheckboxReserveRecords() as TextManageApi.TextInfo[];
+    const selectRecords =
+      $grid.getCheckboxRecords() as TextManageApi.TextInfo[];
+    const reserveRecords =
+      $grid.getCheckboxReserveRecords() as TextManageApi.TextInfo[];
     selectedRows.value = [...selectRecords, ...reserveRecords];
-
-    console.log('[Text] 批量编辑 - 当前选中:', {
-      当前页: selectRecords.length,
-      跨页保留: reserveRecords.length,
-      总计: selectedRows.value.length,
-      IDs: selectedRows.value.map(r => r.id)
-    });
   }
 
   if (selectedCount.value === 0) {
@@ -112,16 +114,11 @@ async function onBatchDelete() {
   // 实时获取选中的记录
   const $grid = gridApi.grid;
   if ($grid) {
-    const selectRecords = $grid.getCheckboxRecords() as TextManageApi.TextInfo[];
-    const reserveRecords = $grid.getCheckboxReserveRecords() as TextManageApi.TextInfo[];
+    const selectRecords =
+      $grid.getCheckboxRecords() as TextManageApi.TextInfo[];
+    const reserveRecords =
+      $grid.getCheckboxReserveRecords() as TextManageApi.TextInfo[];
     selectedRows.value = [...selectRecords, ...reserveRecords];
-
-    console.log('[Text] 批量删除 - 当前选中:', {
-      当前页: selectRecords.length,
-      跨页保留: reserveRecords.length,
-      总计: selectedRows.value.length,
-      IDs: selectedRows.value.map(r => r.id)
-    });
   }
 
   if (selectedCount.value === 0) {
@@ -149,7 +146,7 @@ async function onBatchDelete() {
       });
 
       onBatchSuccess();
-    } catch (error) {
+    } catch {
       hideLoading();
       message.error('批量删除失败');
     }
@@ -172,7 +169,7 @@ async function onDelete(row: TextManageApi.TextInfo) {
       key: 'action_process_msg',
     });
     refreshGrid();
-  } catch (error) {
+  } catch {
     hideLoading();
     message.error('删除失败');
   }
@@ -189,7 +186,7 @@ async function onAudit(row: TextManageApi.TextInfo) {
         await auditTextApi(row.id, 1);
         message.success('审核通过');
         refreshGrid();
-      } catch (error) {
+      } catch {
         message.error('审核失败');
       }
     },
@@ -198,7 +195,7 @@ async function onAudit(row: TextManageApi.TextInfo) {
         await auditTextApi(row.id, 2);
         message.success('审核拒绝');
         refreshGrid();
-      } catch (error) {
+      } catch {
         message.error('审核失败');
       }
     },
@@ -210,16 +207,16 @@ function onActionClick({
   row,
 }: OnActionClickParams<TextManageApi.TextInfo>) {
   switch (code) {
+    case 'audit': {
+      onAudit(row);
+      break;
+    }
     case 'delete': {
       onDelete(row);
       break;
     }
     case 'edit': {
       onEdit(row);
-      break;
-    }
-    case 'audit': {
-      onAudit(row);
       break;
     }
   }
@@ -298,8 +295,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
             page: page.currentPage,
             pageSize: page.pageSize,
             keyword: formValues.keyword || undefined,
-            categoryId: formValues.categoryId ? Number(formValues.categoryId) : undefined,
-            status: formValues.status !== undefined && formValues.status !== '' ? Number(formValues.status) : undefined,
+            categoryId: formValues.categoryId
+              ? Number(formValues.categoryId)
+              : undefined,
+            status:
+              formValues.status !== undefined && formValues.status !== ''
+                ? Number(formValues.status)
+                : undefined,
             sortBy: sort?.field,
             sortOrder: sort?.order === 'desc' ? 'DESC' : 'ASC',
           });
@@ -328,13 +330,11 @@ function refreshGrid() {
 function onCheckboxChange() {
   const $grid = gridApi.grid;
   if ($grid) {
-    const selectRecords = $grid.getCheckboxRecords() as TextManageApi.TextInfo[];
-    const reserveRecords = $grid.getCheckboxReserveRecords() as TextManageApi.TextInfo[];
+    const selectRecords =
+      $grid.getCheckboxRecords() as TextManageApi.TextInfo[];
+    const reserveRecords =
+      $grid.getCheckboxReserveRecords() as TextManageApi.TextInfo[];
     selectedRows.value = [...selectRecords, ...reserveRecords];
-
-    console.log(
-      `[Text] 当前页勾选: ${selectRecords.length} 条, 已保留勾选: ${reserveRecords.length} 条, 总计: ${selectedRows.value.length} 条`,
-    );
   }
 }
 
@@ -366,9 +366,9 @@ function onBatchSuccess() {
             v-if="selectedCount > 0"
             class="mr-4 flex items-center gap-2 rounded bg-blue-50 px-3 py-1"
           >
-            <span class="text-sm text-blue-600"
-              >已选择 {{ selectedCount }} 项</span
-            >
+            <span class="text-sm text-blue-600">
+              已选择 {{ selectedCount }} 项
+            </span>
           </div>
 
           <!-- 批量操作按钮 -->

@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
-import { Button, message, Upload } from 'ant-design-vue';
-import { useVbenForm } from '#/adapter/form';
-import { batchImportImagesApi } from '#/api/manage/image';
-import { getCategoryListApi } from '#/api/manage/category';
+
+import { message, Upload } from 'ant-design-vue';
+
+import { useVbenForm, z } from '#/adapter/form';
 import { uploadFile } from '#/api/core/upload';
-import { z } from '#/adapter/form';
+import { getCategoryListApi } from '#/api/manage/category';
+import { batchImportImagesApi } from '#/api/manage/image';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
 
 const emit = defineEmits(['success']);
@@ -29,7 +31,10 @@ async function processQueue() {
 
   isProcessingQueue = true;
 
-  while (uploadQueue.length > 0 && uploadingCount.value < MAX_CONCURRENT_UPLOADS) {
+  while (
+    uploadQueue.length > 0 &&
+    uploadingCount.value < MAX_CONCURRENT_UPLOADS
+  ) {
     const uploadTask = uploadQueue.shift();
     if (uploadTask) {
       uploadingCount.value++;
@@ -71,7 +76,10 @@ const [Form, formApi] = useVbenForm({
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
-        options: IMAGE_TYPE_OPTIONS.map(item => ({ label: item.label, value: item.value })),
+        options: IMAGE_TYPE_OPTIONS.map((item) => ({
+          label: item.label,
+          value: item.value,
+        })),
         optionType: 'button',
       },
       defaultValue: 'avatar',
@@ -94,10 +102,13 @@ const [Form, formApi] = useVbenForm({
               contentType: 'image',
               imageType: values.imageType,
               page: 1,
-              pageSize: 100
+              pageSize: 100,
             });
             return {
-              options: res.list.map((item) => ({ label: item.name, value: item.id })),
+              options: res.list.map((item) => ({
+                label: item.name,
+                value: item.id,
+              })),
             };
           }
           return { options: [] };
@@ -165,7 +176,9 @@ const [Modal, modalApi] = useVbenModal({
     const { valid } = await formApi.validate();
     if (valid) {
       // 检查是否有上传的文件
-      const doneFiles = uploadedFiles.value.filter((file: any) => file.status === 'done');
+      const doneFiles = uploadedFiles.value.filter(
+        (file: any) => file.status === 'done',
+      );
 
       if (doneFiles.length === 0) {
         message.error('请至少上传一张图片');
@@ -186,7 +199,7 @@ const [Modal, modalApi] = useVbenModal({
         if (url && url.includes('://')) {
           try {
             url = new URL(url).pathname;
-          } catch (e) {
+          } catch {
             console.warn('解析URL失败，使用原始值:', url);
           }
         }
@@ -195,7 +208,7 @@ const [Modal, modalApi] = useVbenModal({
         if (thumbnailUrl && thumbnailUrl.includes('://')) {
           try {
             thumbnailUrl = new URL(thumbnailUrl).pathname;
-          } catch (e) {
+          } catch {
             console.warn('解析缩略图URL失败，使用原始值:', thumbnailUrl);
           }
         }
@@ -224,7 +237,7 @@ const [Modal, modalApi] = useVbenModal({
         message.success(`成功创建 ${images.length} 张图片`);
         modalApi.close();
         emit('success');
-      } catch (error) {
+      } catch {
         message.error('批量创建失败');
       } finally {
         modalApi.lock(false);
@@ -276,10 +289,15 @@ const [Modal, modalApi] = useVbenModal({
       <div class="flex-auto">
         <div class="flex items-center gap-4">
           <span class="text-sm text-gray-500">
-            已完成 {{ uploadedFiles.filter(f => f.status === 'done').length }} 张图片
+            已完成
+            {{ uploadedFiles.filter((f) => f.status === 'done').length }} 张图片
           </span>
-          <span v-if="uploadingCount > 0 || uploadQueue.length > 0" class="text-sm text-blue-500">
-            正在上传 {{ uploadingCount }} 张，队列等待 {{ uploadQueue.length }} 张
+          <span
+            v-if="uploadingCount > 0 || uploadQueue.length > 0"
+            class="text-sm text-blue-500"
+          >
+            正在上传 {{ uploadingCount }} 张，队列等待
+            {{ uploadQueue.length }} 张
           </span>
         </div>
       </div>

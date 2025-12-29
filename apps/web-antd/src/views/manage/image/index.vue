@@ -1,30 +1,33 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 import type { ImageManageApi } from '#/api/manage/image';
-import type { VbenFormProps } from '#/adapter/form';
 
-import { Page, useVbenModal } from '@vben/common-ui';
+import { computed, ref } from 'vue';
+
 import { useAccess } from '@vben/access';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
-import { Button, message, Modal as AModal } from 'ant-design-vue';
+
+import { Modal as AModal, Button, message } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  getImageListApi,
-  deleteImageApi,
-  updateImageApi,
-  batchDeleteImagesApi,
-} from '#/api/manage/image';
 import { getCategoryListApi } from '#/api/manage/category';
+import {
+  batchDeleteImagesApi,
+  deleteImageApi,
+  getImageListApi,
+  updateImageApi,
+} from '#/api/manage/image';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
-import { ref, computed } from 'vue';
 
 import { useColumns } from './data';
-import Form from './modules/form.vue';
-import BatchForm from './modules/batch-form.vue';
 import BatchEditForm from './modules/batch-edit-form.vue';
+import BatchForm from './modules/batch-form.vue';
+import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
@@ -63,16 +66,11 @@ function onBatchEdit() {
   // 实时获取选中的记录
   const $grid = gridApi.grid;
   if ($grid) {
-    const selectRecords = $grid.getCheckboxRecords() as ImageManageApi.ImageInfo[];
-    const reserveRecords = $grid.getCheckboxReserveRecords() as ImageManageApi.ImageInfo[];
+    const selectRecords =
+      $grid.getCheckboxRecords() as ImageManageApi.ImageInfo[];
+    const reserveRecords =
+      $grid.getCheckboxReserveRecords() as ImageManageApi.ImageInfo[];
     selectedRows.value = [...selectRecords, ...reserveRecords];
-
-    console.log('[Image] 批量编辑 - 当前选中:', {
-      当前页: selectRecords.length,
-      跨页保留: reserveRecords.length,
-      总计: selectedRows.value.length,
-      IDs: selectedRows.value.map(r => r.id)
-    });
   }
 
   if (selectedCount.value === 0) {
@@ -93,16 +91,11 @@ async function onBatchDelete() {
   // 实时获取选中的记录
   const $grid = gridApi.grid;
   if ($grid) {
-    const selectRecords = $grid.getCheckboxRecords() as ImageManageApi.ImageInfo[];
-    const reserveRecords = $grid.getCheckboxReserveRecords() as ImageManageApi.ImageInfo[];
+    const selectRecords =
+      $grid.getCheckboxRecords() as ImageManageApi.ImageInfo[];
+    const reserveRecords =
+      $grid.getCheckboxReserveRecords() as ImageManageApi.ImageInfo[];
     selectedRows.value = [...selectRecords, ...reserveRecords];
-
-    console.log('[Image] 批量删除 - 当前选中:', {
-      当前页: selectRecords.length,
-      跨页保留: reserveRecords.length,
-      总计: selectedRows.value.length,
-      IDs: selectedRows.value.map(r => r.id)
-    });
   }
 
   if (selectedCount.value === 0) {
@@ -133,7 +126,7 @@ async function onBatchDelete() {
       selectedRows.value = [];
 
       refreshGrid();
-    } catch (error) {
+    } catch {
       hideLoading();
       message.error('批量删除失败');
     }
@@ -156,7 +149,7 @@ async function onDelete(row: ImageManageApi.ImageInfo) {
       key: 'action_process_msg',
     });
     refreshGrid();
-  } catch (error) {
+  } catch {
     hideLoading();
     message.error('删除失败');
   }
@@ -316,8 +309,6 @@ const canCreate = hasAccessByCodes(['image:create']);
 const canEdit = hasAccessByCodes(['image:edit']);
 const canDelete = hasAccessByCodes(['image:delete']);
 
-console.log('[Image] 权限检查:', { canCreate, canEdit, canDelete });
-
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
@@ -388,26 +379,28 @@ function onCheckboxChange() {
   const $grid = gridApi.grid;
   if ($grid) {
     // 获取当前页选中的记录
-    const selectRecords = $grid.getCheckboxRecords() as ImageManageApi.ImageInfo[];
+    const selectRecords =
+      $grid.getCheckboxRecords() as ImageManageApi.ImageInfo[];
     // 获取跨页保留选中的记录
-    const reserveRecords = $grid.getCheckboxReserveRecords() as ImageManageApi.ImageInfo[];
+    const reserveRecords =
+      $grid.getCheckboxReserveRecords() as ImageManageApi.ImageInfo[];
 
     // 合并两种选中记录
     selectedRows.value = [...selectRecords, ...reserveRecords];
-
-    console.log(
-      `[Image] 当前页勾选: ${selectRecords.length} 条, 已保留勾选: ${reserveRecords.length} 条, 总计: ${selectedRows.value.length} 条`,
-    );
   }
 }
 
 // 范围选择开始
 function onCheckboxRangeStart() {
-  console.log('[Image] 开始拖拽范围选择');
+  // console.log('[Image] 开始拖拽范围选择');
 }
 
 // 范围选择结束
-function onCheckboxRangeEnd({ records }: { records: ImageManageApi.ImageInfo[] }) {
+function onCheckboxRangeEnd({
+  records,
+}: {
+  records: ImageManageApi.ImageInfo[];
+}) {
   console.log(`[Image] 结束拖拽选择, 本次选择 ${records.length} 条`);
 }
 
@@ -443,10 +436,9 @@ function onBatchSuccess() {
             <div
               class="mr-4 flex items-center gap-2 rounded bg-blue-50 px-3 py-1"
             >
-              <span class="text-sm text-blue-600"
-                >已选择 {{ selectedCount }} 项</span
-              >
-            
+              <span class="text-sm text-blue-600">
+                已选择 {{ selectedCount }} 项
+              </span>
             </div>
           </template>
 

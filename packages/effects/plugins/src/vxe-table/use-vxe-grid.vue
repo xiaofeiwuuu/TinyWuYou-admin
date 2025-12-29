@@ -200,11 +200,14 @@ const options = computed(() => {
 
   if (mergedOptions.pagerConfig) {
     const mobileLayouts = [
+      'Home',
       'PrevJump',
       'PrevPage',
       'Number',
       'NextPage',
       'NextJump',
+      'FullJump',
+      'Total',
     ] as any;
     const layouts = [
       'Total',

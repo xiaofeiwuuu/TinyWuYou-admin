@@ -2,10 +2,14 @@
 import type { ImageManageApi } from '#/api/manage/image';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
 import { createImageApi, updateImageApi } from '#/api/manage/image';
+
 import { useSchema } from '../data';
 
 const emit = defineEmits(['success']);
@@ -48,7 +52,7 @@ const [Modal, modalApi] = useVbenModal({
         if (url && url.includes('://')) {
           try {
             url = new URL(url).pathname;
-          } catch (e) {
+          } catch {
             console.warn('解析URL失败，使用原始值:', url);
           }
         }
@@ -58,7 +62,7 @@ const [Modal, modalApi] = useVbenModal({
         if (thumbnailUrl && thumbnailUrl.includes('://')) {
           try {
             thumbnailUrl = new URL(thumbnailUrl).pathname;
-          } catch (e) {
+          } catch {
             console.warn('解析缩略图URL失败，使用原始值:', thumbnailUrl);
           }
         }

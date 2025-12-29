@@ -1,19 +1,21 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 import type { CategoryManageApi } from '#/api/manage/category';
-import type { VbenFormProps } from '#/adapter/form';
 
-import { Page, useVbenModal } from '@vben/common-ui';
 import { useAccess } from '@vben/access';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+
 import { Button, message, Modal } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  getCategoryListApi,
   deleteCategoryApi,
+  getCategoryListApi,
   updateCategoryApi,
 } from '#/api/manage/category';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
@@ -50,7 +52,7 @@ async function onDelete(row: CategoryManageApi.CategoryInfo) {
       key: 'action_process_msg',
     });
     refreshGrid();
-  } catch (error) {
+  } catch {
     hideLoading();
     message.error('删除失败');
   }
@@ -153,7 +155,10 @@ const formOptions: VbenFormProps = {
         dropdownMatchSelectWidth: false,
         placeholder: '全部',
         filterable: true,
-        options: IMAGE_TYPE_OPTIONS.map(item => ({ label: item.label, value: item.value })),
+        options: IMAGE_TYPE_OPTIONS.map((item) => ({
+          label: item.label,
+          value: item.value,
+        })),
       },
     },
     {
@@ -185,7 +190,12 @@ const canDelete = hasAccessByCodes(['category:delete']);
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
-    columns: useColumns(onActionClick, canEdit ? onStatusChange : undefined, canEdit, canDelete),
+    columns: useColumns(
+      onActionClick,
+      canEdit ? onStatusChange : undefined,
+      canEdit,
+      canDelete,
+    ),
     height: 'auto',
     keepSource: true,
     pagerConfig: {
@@ -205,7 +215,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
             keyword: formValues.keyword || undefined,
             contentType: formValues.contentType || undefined,
             imageType: formValues.imageType || undefined,
-            status: formValues.status !== undefined && formValues.status !== '' ? Number(formValues.status) : undefined,
+            status:
+              formValues.status !== undefined && formValues.status !== ''
+                ? Number(formValues.status)
+                : undefined,
             sortBy: sort?.field,
             sortOrder: sort?.order === 'desc' ? 'DESC' : 'ASC',
           });

@@ -1,8 +1,17 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import { Button as AButton, InputNumber as AInputNumber, message } from 'ant-design-vue';
+import type { UserManageApi } from '#/api/manage/user';
+
+import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
-import { grantUserVipApi, type UserManageApi } from '#/api/manage/user';
+
+import {
+  Button as AButton,
+  InputNumber as AInputNumber,
+  message,
+} from 'ant-design-vue';
+
+import { grantUserVipApi } from '#/api/manage/user';
 
 interface Props {
   actionType: 'grant' | 'renew';
@@ -19,7 +28,7 @@ const [Modal, modalApi] = useVbenModal({
   onConfirm: handleConfirm,
 });
 
-const userData = ref<UserManageApi.UserInfo | null>(null);
+const userData = ref<null | UserManageApi.UserInfo>(null);
 const customDays = ref(30);
 const loading = ref(false);
 
@@ -31,8 +40,11 @@ const modalTitle = computed(() => {
 
 const showCurrentVip = computed(() => {
   if (!userData.value) return false;
-  return userData.value.isVip === 1 && userData.value.vipExpireTime &&
-         new Date(userData.value.vipExpireTime) > new Date();
+  return (
+    userData.value.isVip === 1 &&
+    userData.value.vipExpireTime &&
+    new Date(userData.value.vipExpireTime) > new Date()
+  );
 });
 
 const currentVipInfo = computed(() => {
@@ -88,7 +100,8 @@ defineExpose({
       <div v-if="showCurrentVip" class="mb-4 rounded bg-blue-50 p-3 text-sm">
         <div class="text-gray-600">
           <span class="icon-[ant-design--info-circle-outlined] mr-1"></span>
-          当前VIP到期时间: <span class="font-semibold text-blue-600">{{ currentVipInfo }}</span>
+          当前VIP到期时间:
+          <span class="font-semibold text-blue-600">{{ currentVipInfo }}</span>
         </div>
       </div>
 
@@ -96,16 +109,16 @@ defineExpose({
       <div class="mb-4">
         <div class="mb-2 text-sm font-medium text-gray-700">自定义天数:</div>
         <div class="flex gap-2">
-          <a-input-number
+          <AInputNumber
             v-model:value="customDays"
             :min="1"
             :max="3650"
             placeholder="请输入天数"
             class="flex-1"
           />
-          <a-button type="primary" @click="handleConfirm" :loading="loading">
+          <AButton type="primary" @click="handleConfirm" :loading="loading">
             确定
-          </a-button>
+          </AButton>
         </div>
       </div>
 
@@ -113,30 +126,42 @@ defineExpose({
       <div>
         <div class="mb-2 text-sm font-medium text-gray-700">快捷选择:</div>
         <div class="grid grid-cols-3 gap-2">
-          <a-button
+          <AButton
             @click="handleQuickSelect(3)"
             :type="customDays === 3 ? 'primary' : 'default'"
-          >3天</a-button>
-          <a-button
+          >
+            3天
+          </AButton>
+          <AButton
             @click="handleQuickSelect(7)"
             :type="customDays === 7 ? 'primary' : 'default'"
-          >7天</a-button>
-          <a-button
+          >
+            7天
+          </AButton>
+          <AButton
             @click="handleQuickSelect(10)"
             :type="customDays === 10 ? 'primary' : 'default'"
-          >10天</a-button>
-          <a-button
+          >
+            10天
+          </AButton>
+          <AButton
             @click="handleQuickSelect(15)"
             :type="customDays === 15 ? 'primary' : 'default'"
-          >15天</a-button>
-          <a-button
+          >
+            15天
+          </AButton>
+          <AButton
             @click="handleQuickSelect(30)"
             :type="customDays === 30 ? 'primary' : 'default'"
-          >30天</a-button>
-          <a-button
+          >
+            30天
+          </AButton>
+          <AButton
             @click="handleQuickSelect(90)"
             :type="customDays === 90 ? 'primary' : 'default'"
-          >90天</a-button>
+          >
+            90天
+          </AButton>
         </div>
       </div>
     </div>

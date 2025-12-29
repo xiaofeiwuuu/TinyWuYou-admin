@@ -1,19 +1,21 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
 import type { TaskManageApi } from '#/api/manage/task';
-import type { VbenFormProps } from '#/adapter/form';
 
-import { Page, useVbenModal } from '@vben/common-ui';
 import { useAccess } from '@vben/access';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+
 import { Button, message, Modal } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  getTaskListApi,
   deleteTaskApi,
+  getTaskListApi,
   updateTaskApi,
 } from '#/api/manage/task';
 
@@ -47,7 +49,7 @@ async function onDelete(row: TaskManageApi.TaskInfo) {
       key: 'action_process_msg',
     });
     refreshGrid();
-  } catch (error) {
+  } catch {
     hideLoading();
     message.error('删除失败');
   }
@@ -84,10 +86,7 @@ function confirm(content: string, title: string) {
   });
 }
 
-async function onStatusChange(
-  newStatus: number,
-  row: TaskManageApi.TaskInfo,
-) {
+async function onStatusChange(newStatus: number, row: TaskManageApi.TaskInfo) {
   const statusText: Record<string, string> = {
     0: '禁用',
     1: '启用',
@@ -131,7 +130,12 @@ const formOptions: VbenFormProps = {
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
-    columns: useColumns(onActionClick, canEdit ? onStatusChange : undefined, canEdit, canDelete),
+    columns: useColumns(
+      onActionClick,
+      canEdit ? onStatusChange : undefined,
+      canEdit,
+      canDelete,
+    ),
     height: 'auto',
     keepSource: true,
     pagerConfig: {

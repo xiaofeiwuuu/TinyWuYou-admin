@@ -94,8 +94,9 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   // 请求加密拦截器
   client.addRequestInterceptor({
     fulfilled: async (config) => {
-      // 跳过不需要加密的路由（密钥交换、登录、退出登录、文件上传等）
-      const skipRoutes = ['/auth/exchange-key', '/auth/public-key', '/auth/admin/login', '/auth/wx-login', '/auth/logout', '/upload'];
+      // 跳过不需要加密的路由（密钥交换、公钥获取、小程序登录、退出登录、文件上传等）
+      // 注意: /auth/admin/login 现在需要加密
+      const skipRoutes = ['/auth/exchange-key', '/auth/public-key', '/auth/wx-login', '/auth/logout', '/upload'];
       const url = config.url || '';
 
       if (skipRoutes.some((route) => url.includes(route))) {
@@ -142,7 +143,8 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   // 响应解密拦截器（在处理响应数据格式之前）
   client.addResponseInterceptor({
     fulfilled: async (response) => {
-      const skipRoutes = ['/auth/exchange-key', '/auth/public-key', '/auth/admin/login', '/auth/wx-login', '/auth/logout', '/upload'];
+      // 跳过不需要解密的路由（与请求加密拦截器保持一致）
+      const skipRoutes = ['/auth/exchange-key', '/auth/public-key', '/auth/wx-login', '/auth/logout', '/upload'];
       const url = response.config.url || '';
 
       // 跳过不需要解密的路由
@@ -170,13 +172,15 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
           );
           response.data = JSON.parse(decryptedData);
         } catch (error) {
-          console.error('[Response] 解密失败，清除所有缓存:', error);
+          console.error('[Response] 解密失败，清除缓存并重新交换密钥:', error);
           // 解密失败,清除所有缓存
           localStorage.removeItem('__client_id__');
           localStorage.removeItem('__aes_key__');
           keyManager.clearKeys();
-          // 返回原始响应,让业务层处理错误
-          return response;
+          // 刷新页面重新交换密钥
+          window.location.reload();
+          // 返回永不 resolve 的 Promise，阻止后续代码执行
+          return new Promise(() => {});
         }
       }
 

@@ -48,25 +48,6 @@ export async function getOverviewStatisticsApi() {
 }
 
 /**
- * 获取最近N天的统计数据
- */
-export async function getRecentStatisticsApi(days: number = 30) {
-  return requestClient.get<StatisticsApi.DailyStatistics[]>(
-    '/admin/statistics/recent',
-    { params: { days } },
-  );
-}
-
-/**
- * 手动更新统计数据
- */
-export async function updateStatisticsApi() {
-  return requestClient.get<StatisticsApi.OverviewData>(
-    '/admin/statistics/update',
-  );
-}
-
-/**
  * 按日期范围获取用户统计
  */
 export async function getUserStatsByDateRangeApi(startDate: string, endDate: string) {

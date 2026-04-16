@@ -220,9 +220,9 @@ const options = computed(() => {
       {},
       mergedOptions.pagerConfig,
       {
-        pageSize: 20,
+        pageSize: 50,
         background: true,
-        pageSizes: [10, 20, 30, 50, 100, 200],
+        pageSizes: [50, 100, 200],
         className: 'mt-2 w-full',
         layouts: isMobile.value ? mobileLayouts : layouts,
         size: 'mini' as const,

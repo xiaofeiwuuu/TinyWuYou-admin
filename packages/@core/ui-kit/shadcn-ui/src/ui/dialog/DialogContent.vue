@@ -3,7 +3,7 @@ import type { DialogContentEmits, DialogContentProps } from 'radix-vue';
 
 import type { ClassType } from '@vben-core/typings';
 
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { cn } from '@vben-core/shared/utils';
 
@@ -76,6 +76,15 @@ function onAnimationEnd(event: AnimationEvent) {
     }
   }
 }
+// 弹窗打开时锁定滚动
+watch(
+  () => props.open && props.modal,
+  (shouldLock) => {
+    document.body.style.overflow = shouldLock ? 'hidden' : '';
+  },
+  { immediate: true },
+);
+
 defineExpose({
   getContentRef: () => contentRef.value,
 });

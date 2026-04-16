@@ -94,8 +94,16 @@ export function useSchema(): VbenFormSchema[] {
         showUploadList: true,
         onRemove: async (file: any) => {
           // 删除服务器上的文件（后端会自动删除缩略图）
-          const url = file.response?.url || file.url;
+          let url = file.response?.url || file.url;
           if (url) {
+            // 提取相对路径（去除域名部分）
+            if (url.includes('://')) {
+              try {
+                url = new URL(url).pathname;
+              } catch {
+                // 保持原值
+              }
+            }
             try {
               await deleteUploadedFile(url);
             } catch (error) {

@@ -216,7 +216,7 @@ function handleClosed() {
 </script>
 <template>
   <Dialog
-    :modal="false"
+    :modal="modal"
     :open="state?.isOpen"
     @update:open="() => (!submitting ? modalApi?.close() : undefined)"
   >

@@ -5,7 +5,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { ImageManageApi } from '#/api/manage/image';
 
 import { z } from '#/adapter/form';
-import { uploadFile } from '#/api/core/upload';
+import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
 import { getCategoryListApi } from '#/api/manage/category';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
 
@@ -92,6 +92,25 @@ export function useSchema(): VbenFormSchema[] {
         maxCount: 1,
         multiple: false,
         showUploadList: true,
+        onRemove: async (file: any) => {
+          let url = file.response?.url || file.url;
+          if (url) {
+            // 提取相对路径（去除域名部分）
+            if (url.includes('://')) {
+              try {
+                url = new URL(url).pathname;
+              } catch {
+                // 保持原值
+              }
+            }
+            try {
+              await deleteUploadedFile(url);
+            } catch (error) {
+              console.error('删除文件失败:', error);
+            }
+          }
+          return true;
+        },
       },
       fieldName: 'imageUrl',
       label: '图片',

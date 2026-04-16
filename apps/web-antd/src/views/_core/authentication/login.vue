@@ -2,14 +2,26 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 import type { BasicOption } from '@vben/types';
 
-import { computed, markRaw } from 'vue';
+import { computed, markRaw, onMounted } from 'vue';
 
 import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useAuthStore } from '#/store';
+import { keyManager } from '#/utils/key-manager';
 
 defineOptions({ name: 'Login' });
+
+// 登录页加载时预先完成密钥交换，避免登录时延迟
+onMounted(async () => {
+  try {
+    if (!keyManager.isKeyExchanged()) {
+      await keyManager.exchangeKey();
+    }
+  } catch (error) {
+    console.warn('[Login] 预先密钥交换失败，登录时会重试:', error);
+  }
+});
 
 const authStore = useAuthStore();
 

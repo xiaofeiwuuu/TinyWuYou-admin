@@ -5,22 +5,23 @@ export namespace TaskManageApi {
   export interface ListParams {
     page?: number;
     pageSize?: number;
-    keyword?: string;
+    taskType?: string;
+    status?: number; // isEnabled: 0禁用 1启用
   }
 
   /** 任务信息 */
   export interface TaskInfo {
     id: number;
-    taskType: string;
+    taskType: string; // newbie/signin/invite/ad
     taskName: string;
-    description: string;
-    requiredCount: number;
-    rewardType: string;
-    rewardValue: number;
-    iconUrl: string;
+    taskDesc: string;
+    rewardCount: number;
+    dailyLimit: number; // 每日上限(0为不限)
+    refreshType: 'once' | 'daily' | 'unlimited';
+    isEnabled: number; // 0禁用 1启用
     sortOrder: number;
-    status: number;
     createdAt: string;
+    updatedAt: string;
   }
 
   /** 列表返回 */
@@ -35,11 +36,11 @@ export namespace TaskManageApi {
   export interface SaveParams {
     taskType: string;
     taskName: string;
-    description?: string;
-    requiredCount: number;
-    rewardType: string;
-    rewardValue: number;
-    iconUrl?: string;
+    taskDesc?: string;
+    rewardCount: number;
+    dailyLimit?: number;
+    refreshType: 'once' | 'daily' | 'unlimited';
+    isEnabled?: number;
     sortOrder?: number;
   }
 }
@@ -61,7 +62,7 @@ export async function createTaskApi(data: TaskManageApi.SaveParams) {
 /**
  * 更新任务
  */
-export async function updateTaskApi(id: number, data: TaskManageApi.SaveParams) {
+export async function updateTaskApi(id: number, data: Partial<TaskManageApi.SaveParams>) {
   return requestClient.put(`/admin/tasks/${id}`, data);
 }
 

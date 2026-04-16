@@ -7,7 +7,6 @@ export namespace TextManageApi {
     pageSize?: number;
     categoryId?: number;
     keyword?: string;
-    auditStatus?: number;
     status?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
@@ -17,15 +16,14 @@ export namespace TextManageApi {
   export interface TextInfo {
     id: number;
     categoryId: number;
+    category?: {
+      id: number;
+      name: string;
+    };
+    title?: string;
     content: string;
-    authorName: string;
-    sourceName: string;
-    copyCount: number;
-    collectCount: number;
-    hotScore: number;
     isVip: number;
-    isRecommend: number;
-    auditStatus: number;
+    sortOrder: number;
     status: number;
     createdAt: string;
   }
@@ -41,12 +39,9 @@ export namespace TextManageApi {
   /** 创建/更新文案 */
   export interface SaveParams {
     categoryId: number;
+    title?: string;
     content: string;
-    authorName?: string;
-    sourceName?: string;
-    tags?: string;
-    isVip?: number;
-    isRecommend?: number;
+    sortOrder?: number;
   }
 }
 
@@ -76,20 +71,6 @@ export async function updateTextApi(id: number, data: TextManageApi.SaveParams) 
  */
 export async function deleteTextApi(id: number) {
   return requestClient.delete(`/admin/texts/${id}`);
-}
-
-/**
- * 审核文案
- */
-export async function auditTextApi(id: number, status: number) {
-  return requestClient.put(`/admin/texts/${id}/audit`, { status });
-}
-
-/**
- * 批量导入文案
- */
-export async function batchImportTextsApi(texts: TextManageApi.SaveParams[]) {
-  return requestClient.post('/admin/texts/batch', { texts });
 }
 
 /**

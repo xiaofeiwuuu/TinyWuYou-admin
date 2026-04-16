@@ -94,6 +94,17 @@ const [Modal, modalApi] = useVbenModal({
       const data = modalApi.getData<ImageManageApi.ImageInfo>();
       if (data) {
         formData.value = data;
+
+        // 编辑模式：禁止删除图片
+        formApi.updateSchema([
+          {
+            fieldName: 'imageUrl',
+            componentProps: {
+              showUploadList: { showRemoveIcon: false },
+            },
+          },
+        ]);
+
         // 转换图片 URL 为 Upload 组件期望的格式
         const formValues = { ...data };
 
@@ -111,6 +122,17 @@ const [Modal, modalApi] = useVbenModal({
         formApi.setValues(formValues);
       } else {
         formData.value = undefined;
+
+        // 新增模式：允许删除图片
+        formApi.updateSchema([
+          {
+            fieldName: 'imageUrl',
+            componentProps: {
+              showUploadList: true,
+            },
+          },
+        ]);
+
         formApi.resetForm();
       }
     }
@@ -128,3 +150,12 @@ const [Modal, modalApi] = useVbenModal({
     </template>
   </Modal>
 </template>
+
+<style scoped>
+/* 当已上传文件达到 maxCount 限制时，隐藏上传按钮 */
+:deep(.ant-upload-wrapper.ant-upload-picture-card-wrapper)
+  .ant-upload-list-item-container
+  ~ .ant-upload {
+  display: none;
+}
+</style>

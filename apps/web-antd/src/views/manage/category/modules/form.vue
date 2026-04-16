@@ -111,3 +111,12 @@ const [Modal, modalApi] = useVbenModal({
     </template>
   </Modal>
 </template>
+
+<style scoped>
+/* 当已上传文件达到 maxCount 限制时，隐藏上传按钮 */
+:deep(.ant-upload-wrapper.ant-upload-picture-card-wrapper)
+  .ant-upload-list-item-container
+  ~ .ant-upload {
+  display: none;
+}
+</style>

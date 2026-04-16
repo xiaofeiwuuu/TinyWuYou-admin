@@ -69,15 +69,23 @@ const formOptions: VbenFormProps = {
   schema: [
     {
       component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索',
+      fieldName: 'cardCode',
+      label: '卡号',
       componentProps: {
         placeholder: '卡号',
       },
     },
     {
+      component: 'Input',
+      fieldName: 'batchNo',
+      label: '批次号',
+      componentProps: {
+        placeholder: '批次号',
+      },
+    },
+    {
       component: 'Select',
-      fieldName: 'isUsed',
+      fieldName: 'status',
       label: '使用状态',
       componentProps: {
         allowClear: true,
@@ -85,6 +93,8 @@ const formOptions: VbenFormProps = {
         options: [
           { label: '未使用', value: 0 },
           { label: '已使用', value: 1 },
+          { label: '已过期', value: 2 },
+          { label: '已作废', value: 3 },
         ],
       },
     },
@@ -114,10 +124,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return await getVipCardListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
-            keyword: formValues.keyword || undefined,
-            isUsed:
-              formValues.isUsed !== undefined && formValues.isUsed !== ''
-                ? Number(formValues.isUsed)
+            cardCode: formValues.cardCode || undefined,
+            batchNo: formValues.batchNo || undefined,
+            status:
+              formValues.status !== undefined && formValues.status !== ''
+                ? Number(formValues.status)
                 : undefined,
           });
         },

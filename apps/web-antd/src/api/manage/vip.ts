@@ -5,22 +5,27 @@ export namespace VipManageApi {
   export interface ListParams {
     page?: number;
     pageSize?: number;
-    keyword?: string;
-    isUsed?: number;
+    cardCode?: string;
+    cardType?: string;
+    status?: number;
+    batchNo?: string;
   }
 
   /** VIP卡信息 */
   export interface VipCardInfo {
     id: number;
     cardCode: string;
-    days: number;
-    price: number;
-    description: string;
-    isUsed: number;
-    usedByUserId: number | null;
-    usedAt: string | null;
-    status: number;
+    cardType: string;
+    cardDays: number;
+    downloadCount: number;
+    cardPrice: number;
+    status: number; // 0未使用 1已使用 2已过期 3已作废
+    usedUserId: number | null;
+    usedTime: string | null;
+    usedIp: string | null;
+    batchNo: string | null;
     createdAt: string;
+    expireAt: string | null;
   }
 
   /** 列表返回 */
@@ -75,20 +80,8 @@ export async function deleteVipCardApi(id: number) {
 }
 
 /**
- * 切换VIP卡状态
+ * 作废VIP卡
  */
-export async function toggleVipCardStatusApi(id: number, status: number) {
-  return requestClient.put(`/admin/vip-cards/${id}/status`, { status });
-}
-
-/**
- * 导出VIP卡
- */
-export async function exportVipCardsApi(params: { isUsed?: number }) {
-  return requestClient.get<VipManageApi.VipCardInfo[]>(
-    '/admin/vip-cards/export',
-    {
-      params,
-    },
-  );
+export async function voidVipCardApi(id: number) {
+  return requestClient.put(`/admin/vip-cards/${id}/void`);
 }

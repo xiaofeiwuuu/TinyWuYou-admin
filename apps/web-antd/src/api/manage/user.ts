@@ -46,13 +46,6 @@ export async function getUserListApi(params: UserManageApi.ListParams) {
 }
 
 /**
- * 获取用户详情
- */
-export async function getUserDetailApi(id: number) {
-  return requestClient.get<UserManageApi.UserInfo>(`/admin/users/${id}`);
-}
-
-/**
  * 更新用户下载次数
  */
 export async function updateUserDownloadCountApi(id: number, count: number) {

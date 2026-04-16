@@ -16,7 +16,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteMiniProgramApi,
   getMiniProgramListApi,
-  updateMiniProgramApi,
+  toggleMiniProgramStatusApi,
 } from '#/api/manage/miniprogram';
 
 import { useColumns } from './data';
@@ -99,7 +99,7 @@ async function onStatusChange(
       `你要将「${row.name}」的状态切换为【${statusText[newStatus.toString()]}】吗？`,
       '切换状态',
     );
-    await updateMiniProgramApi(row.id, { status: newStatus } as any);
+    await toggleMiniProgramStatusApi(row.id, newStatus);
     message.success('状态切换成功');
     return true;
   } catch {
@@ -117,11 +117,16 @@ const formOptions: VbenFormProps = {
   wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   schema: [
     {
-      component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索',
+      component: 'Select',
+      fieldName: 'status',
+      label: '状态',
       componentProps: {
-        placeholder: '小程序名称或AppID',
+        allowClear: true,
+        placeholder: '全部',
+        options: [
+          { label: '启用', value: 1 },
+          { label: '禁用', value: 0 },
+        ],
       },
     },
   ],
@@ -151,10 +156,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
         total: 'total',
       },
       ajax: {
-        query: async ({ page }) => {
+        query: async ({ page }, formValues) => {
           const res = await getMiniProgramListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
+            status:
+              formValues.status !== undefined && formValues.status !== ''
+                ? Number(formValues.status)
+                : undefined,
           });
           return res;
         },

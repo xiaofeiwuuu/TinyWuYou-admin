@@ -58,7 +58,7 @@ export async function createMiniProgramApi(data: MiniProgramManageApi.SaveParams
 /**
  * 更新小程序
  */
-export async function updateMiniProgramApi(id: number, data: MiniProgramManageApi.SaveParams) {
+export async function updateMiniProgramApi(id: number, data: Partial<MiniProgramManageApi.SaveParams>) {
   return requestClient.put(`/admin/miniprograms/${id}`, data);
 }
 

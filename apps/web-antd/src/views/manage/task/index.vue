@@ -114,11 +114,31 @@ const formOptions: VbenFormProps = {
   wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   schema: [
     {
-      component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索',
+      component: 'Select',
+      fieldName: 'taskType',
+      label: '任务类型',
       componentProps: {
-        placeholder: '任务名称',
+        allowClear: true,
+        placeholder: '全部',
+        options: [
+          { label: '新手任务', value: 'newbie' },
+          { label: '签到任务', value: 'signin' },
+          { label: '邀请任务', value: 'invite' },
+          { label: '广告任务', value: 'ad' },
+        ],
+      },
+    },
+    {
+      component: 'Select',
+      fieldName: 'status',
+      label: '状态',
+      componentProps: {
+        allowClear: true,
+        placeholder: '全部',
+        options: [
+          { label: '启用', value: 1 },
+          { label: '禁用', value: 0 },
+        ],
       },
     },
   ],
@@ -152,7 +172,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
           const res = await getTaskListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
-            keyword: formValues.keyword || undefined,
+            taskType: formValues.taskType || undefined,
+            status:
+              formValues.status !== undefined && formValues.status !== ''
+                ? Number(formValues.status)
+                : undefined,
           });
           return res;
         },

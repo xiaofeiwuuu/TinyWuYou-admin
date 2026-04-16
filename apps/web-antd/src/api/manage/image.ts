@@ -10,7 +10,6 @@ export namespace ImageManageApi {
     categoryId?: number;
     imageType?: ImageType;
     keyword?: string;
-    auditStatus?: number;
     status?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
@@ -84,13 +83,6 @@ export async function updateImageApi(id: number, data: ImageManageApi.SaveParams
  */
 export async function deleteImageApi(id: number) {
   return requestClient.delete(`/admin/images/${id}`);
-}
-
-/**
- * 审核图片
- */
-export async function auditImageApi(id: number, status: number) {
-  return requestClient.put(`/admin/images/${id}/audit`, { status });
 }
 
 /**

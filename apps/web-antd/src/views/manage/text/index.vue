@@ -17,7 +17,6 @@ import { Modal as AModal, Button, message } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getCategoryListApi } from '#/api/manage/category';
 import {
-  auditTextApi,
   batchDeleteTextsApi,
   deleteTextApi,
   getTextListApi,
@@ -175,42 +174,11 @@ async function onDelete(row: TextManageApi.TextInfo) {
   }
 }
 
-async function onAudit(row: TextManageApi.TextInfo) {
-  AModal.confirm({
-    title: '审核文案',
-    content: `请选择审核结果`,
-    okText: '通过',
-    cancelText: '拒绝',
-    onOk: async () => {
-      try {
-        await auditTextApi(row.id, 1);
-        message.success('审核通过');
-        refreshGrid();
-      } catch {
-        message.error('审核失败');
-      }
-    },
-    onCancel: async () => {
-      try {
-        await auditTextApi(row.id, 2);
-        message.success('审核拒绝');
-        refreshGrid();
-      } catch {
-        message.error('审核失败');
-      }
-    },
-  });
-}
-
 function onActionClick({
   code,
   row,
 }: OnActionClickParams<TextManageApi.TextInfo>) {
   switch (code) {
-    case 'audit': {
-      onAudit(row);
-      break;
-    }
     case 'delete': {
       onDelete(row);
       break;

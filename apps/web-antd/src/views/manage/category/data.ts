@@ -5,7 +5,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { CategoryManageApi } from '#/api/manage/category';
 
 import { z } from '#/adapter/form';
-import { uploadFile } from '#/api/core/upload';
+import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
 import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
 
 export function getContentTypeOptions() {
@@ -92,6 +92,18 @@ export function useSchema(): VbenFormSchema[] {
         maxCount: 1,
         multiple: false,
         showUploadList: true,
+        onRemove: async (file: any) => {
+          // 删除服务器上的文件（后端会自动删除缩略图）
+          const url = file.response?.url || file.url;
+          if (url) {
+            try {
+              await deleteUploadedFile(url);
+            } catch (error) {
+              console.error('删除文件失败:', error);
+            }
+          }
+          return true;
+        },
       },
       fieldName: 'iconUrl',
       label: '分类图标',

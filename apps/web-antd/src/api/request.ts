@@ -122,15 +122,28 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
         }
       }
 
-      // 加密请求数据
+      // 加密请求数据（POST/PUT/DELETE 等非 GET 请求）
       const aesKey = keyManager.getAesKey();
-      if (aesKey && config.data) {
+      if (aesKey && config.method && config.method.toUpperCase() !== 'GET') {
         try {
+          // 生成时间戳
+          const timestamp = Date.now().toString();
+
+          // body 中加入 timestamp，没有 data 时创建空对象
+          const dataWithTimestamp = { ...(config.data || {}), timestamp };
+
+          // 加密数据
           const encrypted = CryptoUtil.aesEncrypt(
-            JSON.stringify(config.data),
+            JSON.stringify(dataWithTimestamp),
             aesKey,
           );
           config.data = { encrypted };
+
+          // header 中添加时间戳和签名
+          const fullUrl = `/api${url}`; // 后端收到的是带 /api 前缀的 URL
+          const signature = CryptoUtil.hmacSha256(`${timestamp}${fullUrl}`, aesKey);
+          config.headers['x-timestamp'] = timestamp;
+          config.headers['x-signature'] = signature;
         } catch (error) {
           console.error('[Request] 加密失败:', error);
         }

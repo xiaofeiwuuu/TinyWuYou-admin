@@ -28,3 +28,10 @@ export async function uploadFile({
     onError?.(error instanceof Error ? error : new Error(String(error)));
   }
 }
+
+/**
+ * 删除已上传的文件
+ */
+export async function deleteUploadedFile(url: string) {
+  return requestClient.delete('/upload', { data: { url } });
+}

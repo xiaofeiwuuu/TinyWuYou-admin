@@ -168,4 +168,13 @@ export class CryptoUtil {
     }
     return result;
   }
+
+  /**
+   * HMAC-SHA256 签名
+   */
+  static hmacSha256(data: string, secret: string): string {
+    const keyWordArray = CryptoJS.enc.Hex.parse(secret);
+    const hmac = CryptoJS.HmacSHA256(data, keyWordArray);
+    return hmac.toString(CryptoJS.enc.Hex);
+  }
 }

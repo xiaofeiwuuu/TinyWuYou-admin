@@ -215,8 +215,11 @@ function handleClosed() {
 }
 </script>
 <template>
+  <!-- 根 Dialog 固定 modal=false：遮罩由下面的 DialogContent 自己渲染
+       （见 DialogContent.vue 里 DialogOverlay 的 v-if="open && modal"），
+       这里再开一层会叠加 radix 的焦点陷阱 -->
   <Dialog
-    :modal="modal"
+    :modal="false"
     :open="state?.isOpen"
     @update:open="() => (!submitting ? modalApi?.close() : undefined)"
   >

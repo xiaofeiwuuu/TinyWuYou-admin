@@ -4,7 +4,10 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { VipManageApi } from '#/api/manage/vip';
 
+import { h } from 'vue';
+
 import { z } from '#/adapter/form';
+import { copyWithTip } from '#/utils/clipboard';
 
 export function getVipStatusOptions() {
   return [
@@ -88,43 +91,49 @@ export function useSchema(): VbenFormSchema[] {
 
 export function useColumns(
   onActionClick?: OnActionClickFn<VipManageApi.VipCardInfo>,
-  canDelete?: boolean,
+  canVoid?: boolean,
 ): VxeTableGridOptions<VipManageApi.VipCardInfo>['columns'] {
   return [
-    { title: '序号', type: 'seq', width: 50 },
+    // 勾选列，用于批量作废
+    { type: 'checkbox', width: 50, fixed: 'left' },
     {
       title: '卡号',
       field: 'cardCode',
       minWidth: 200,
+      slots: {
+        // 点击即复制。复制实现见 utils/clipboard.ts，
+        // 在 http 环境下会自动降级，不依赖 navigator.clipboard。
+        default: ({ row }) =>
+          h(
+            'span',
+            {
+              class: 'cursor-pointer select-all font-mono hover:underline',
+              title: '点击复制卡号',
+              onClick: () =>
+                copyWithTip(row.cardCode, `已复制 ${row.cardCode}`),
+            },
+            row.cardCode,
+          ),
+      },
     },
     {
       title: 'VIP天数',
       field: 'cardDays',
-      width: 100,
       formatter: ({ cellValue }) => `${cellValue}天`,
     },
     {
       title: '下载次数',
       field: 'downloadCount',
-      width: 100,
       formatter: ({ cellValue }) => cellValue || 0,
     },
     {
       title: '价格',
       field: 'cardPrice',
-      width: 100,
       formatter: ({ cellValue }) => `¥${cellValue}`,
-    },
-    {
-      title: '批次号',
-      field: 'batchNo',
-      width: 160,
-      showOverflow: true,
     },
     {
       title: '使用状态',
       field: 'status',
-      width: 100,
       cellRender: {
         name: 'CellTag',
         options: getVipStatusOptions(),
@@ -133,7 +142,6 @@ export function useColumns(
     {
       title: '使用用户ID',
       field: 'usedUserId',
-      width: 120,
       formatter: ({ cellValue }) => cellValue || '-',
     },
     {
@@ -148,7 +156,6 @@ export function useColumns(
     {
       title: '卡密有效期',
       field: 'expireAt',
-      width: 180,
       formatter: ({ cellValue }) => {
         if (!cellValue) return '永久';
         return new Date(cellValue).toLocaleString('zh-CN');
@@ -157,11 +164,15 @@ export function useColumns(
     {
       title: '创建时间',
       field: 'createdAt',
-      width: 180,
       formatter: ({ cellValue }) => {
         if (!cellValue) return '-';
         return new Date(cellValue).toLocaleString('zh-CN');
       },
+    },
+    {
+      title: '批次号',
+      field: 'batchNo',
+      showOverflow: true,
     },
     {
       align: 'center',
@@ -172,10 +183,19 @@ export function useColumns(
           onClick: onActionClick,
         },
         name: 'CellOperation',
-        options: canDelete
+        options: canVoid
           ? [
               {
-                code: 'delete',
+                code: 'void',
+                text: '作废',
+                // danger 会透传给 antd Button，渲染成红色（与内置的 delete 预设一致）
+                danger: true,
+                // 用按钮旁的气泡确认，而不是居中弹窗——操作在哪确认就在哪
+                confirm: true,
+                confirmTitle: '作废卡密',
+                confirmDescription: (row: VipManageApi.VipCardInfo) =>
+                  `确定作废 ${row.cardCode}？作废后不可再兑换，记录仍会保留。`,
+                // 只有未使用的卡才能作废
                 disabled: (row: VipManageApi.VipCardInfo) => row.status !== 0,
               },
             ]

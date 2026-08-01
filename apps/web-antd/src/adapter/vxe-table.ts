@@ -215,6 +215,13 @@ setupVbenVxeTable({
 
         function renderConfirm(opt: Recordable<any>) {
           let viewportWrapper: HTMLElement | null = null;
+          // 这几个是本渲染器自己消费的配置，不能透传给 Popconfirm / Button
+          const {
+            confirm: _confirm,
+            confirmTitle,
+            confirmDescription,
+            ...btnOpt
+          } = opt;
           return h(
             Popconfirm,
             {
@@ -230,9 +237,11 @@ setupVbenVxeTable({
                 return document.body;
               },
               placement: 'topLeft',
-              title: $t('ui.actionTitle.delete', [attrs?.nameTitle || '']),
+              title:
+                confirmTitle ??
+                $t('ui.actionTitle.delete', [attrs?.nameTitle || '']),
               ...props,
-              ...opt,
+              ...btnOpt,
               icon: undefined,
               onOpenChange: (open: boolean) => {
                 // 当弹窗打开时，禁止表格的滚动
@@ -250,21 +259,26 @@ setupVbenVxeTable({
               },
             },
             {
-              default: () => renderBtn({ ...opt }, false),
+              default: () => renderBtn({ ...btnOpt }, false),
               description: () =>
                 h(
                   'div',
-                  { class: 'truncate' },
-                  $t('ui.actionMessage.deleteConfirm', [
-                    row[attrs?.nameField || 'name'],
-                  ]),
+                  { class: 'whitespace-normal' },
+                  confirmDescription ??
+                    $t('ui.actionMessage.deleteConfirm', [
+                      row[attrs?.nameField || 'name'],
+                    ]),
                 ),
             },
           );
         }
 
+        // delete 默认带二次确认；其它操作可以通过 confirm: true 主动开启，
+        // 并用 confirmTitle / confirmDescription 自定义文案
         const btns = operations.map((opt) =>
-          opt.code === 'delete' ? renderConfirm(opt) : renderBtn(opt),
+          opt.code === 'delete' || opt.confirm
+            ? renderConfirm(opt)
+            : renderBtn(opt),
         );
         return h(
           'div',

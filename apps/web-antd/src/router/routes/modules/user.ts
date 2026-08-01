@@ -24,6 +24,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'UserVipRecord',
+        path: '/user/vip-record',
+        component: () => import('#/views/manage/user-vip/index.vue'),
+        meta: {
+          icon: 'lucide:crown',
+          title: $t('VIP开通记录'),
+        },
+      },
+      {
         name: 'UserInvitation',
         path: '/user/invitation',
         component: () => import('#/views/manage/invitation/index.vue'),

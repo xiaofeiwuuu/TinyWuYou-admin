@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createCategoryApi, updateCategoryApi } from '#/api/manage/category';
+import { loadImageTypes } from '#/constants/image-type';
 
 import { useSchema } from '../data';
 
@@ -25,9 +26,12 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
-function resetForm() {
-  formApi.resetForm();
-  formApi.setValues(formData.value || {});
+// 新增态的默认类型已经写进 schema，resetForm 就会带上，这里不用再单独设
+async function resetForm() {
+  await formApi.resetForm();
+  if (formData.value) {
+    formApi.setValues(formData.value);
+  }
 }
 
 const [Modal, modalApi] = useVbenModal({
@@ -74,27 +78,37 @@ const [Modal, modalApi] = useVbenModal({
       }
     }
   },
-  onOpenChange(isOpen) {
+  async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<CategoryManageApi.CategoryInfo>();
       if (data) {
         formData.value = data;
         // 转换 iconUrl 为 Upload 组件期望的格式
         const formValues = { ...data };
-        if (formValues.iconUrl && typeof formValues.iconUrl === 'string') {
-          formValues.iconUrl = [
-            {
-              uid: '-1',
-              name: formValues.iconUrl.split('/').pop() || 'icon',
-              status: 'done',
-              url: formValues.iconUrl,
-            },
-          ];
-        }
+        // Upload 的 fileList 只接受数组。库里有 43 个分类的 icon_url 是空的，
+        // 空字符串原样传给 Upload 会抛 .map is not a function，所以要兜底成 []
+        formValues.iconUrl =
+          formValues.iconUrl && typeof formValues.iconUrl === 'string'
+            ? [
+                {
+                  uid: '-1',
+                  name: formValues.iconUrl.split('/').pop() || 'icon',
+                  status: 'done',
+                  url: formValues.iconUrl,
+                },
+              ]
+            : Array.isArray(formValues.iconUrl)
+              ? formValues.iconUrl
+              : [];
         formApi.setValues(formValues);
+        // 不 await：选项是响应式的，加载完会自动填进下拉框，
+        // 放在 setValues 之前 await 会让表单先渲染一帧空值
+        loadImageTypes();
       } else {
         formData.value = undefined;
-        formApi.resetForm();
+        // 默认类型由 schema 的 defaultValue 提供，这里只需保证配置是新的
+        loadImageTypes();
+        await formApi.resetForm();
       }
     }
   },

@@ -6,7 +6,10 @@ import type { CategoryManageApi } from '#/api/manage/category';
 
 import { z } from '#/adapter/form';
 import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
-import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
+import {
+  getDefaultImageType,
+  IMAGE_TYPE_OPTIONS,
+} from '#/constants/image-type';
 
 export function getContentTypeOptions() {
   return [
@@ -39,22 +42,27 @@ export function useSchema(): VbenFormSchema[] {
     },
     // 2. 图片类型(仅图片时显示)
     {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
+      component: 'Select',
+      // 函数形式：类型配置改动后能自动跟着变，不会停留在 setup 时的快照上
+      componentProps: () => ({
+        placeholder: '请选择图片类型',
         options: IMAGE_TYPE_OPTIONS.map((item) => ({
           label: item.label,
           value: item.value,
         })),
-        optionType: 'button',
-      },
+        class: 'w-full',
+      }),
       dependencies: {
         triggerFields: ['contentType'],
         if(values) {
           return values.contentType === 'image';
         },
       },
-      defaultValue: 'avatar',
+      // 默认取当前第一个启用类型，而不是写死某个 code。
+      // 弹窗是 destroyOnClose，每次打开都会重新执行 useSchema()，所以这里取到的是最新配置。
+      // 必须放在 schema 里：表单的 initialValues 只在 setup 时算一次，
+      // 之后再 setFieldValue 会被字段挂载时应用的默认值覆盖掉。
+      defaultValue: getDefaultImageType(),
       fieldName: 'imageType',
       label: '图片类型',
       rules: z.string().optional(),
@@ -116,6 +124,8 @@ export function useSchema(): VbenFormSchema[] {
       fieldName: 'iconUrl',
       label: '分类图标',
       help: '支持 PNG、JPG、SVG 格式，建议尺寸 128x128',
+      // 同 imageUrl：Upload 的 fileList 只接受数组
+      defaultValue: [],
       renderComponentContent: () => {
         return {
           default: () => '上传图标',

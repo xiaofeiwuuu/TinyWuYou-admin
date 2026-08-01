@@ -7,7 +7,11 @@ import type { ImageManageApi } from '#/api/manage/image';
 import { z } from '#/adapter/form';
 import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
 import { getCategoryListApi } from '#/api/manage/category';
-import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
+import {
+  getDefaultImageType,
+  IMAGE_TYPE_OPTIONS,
+  type ImageType,
+} from '#/constants/image-type';
 
 export function getImageTypeOptions() {
   return IMAGE_TYPE_OPTIONS;
@@ -16,51 +20,56 @@ export function getImageTypeOptions() {
 export function useSchema(): VbenFormSchema[] {
   return [
     {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
+      component: 'Select',
+      // 函数形式：类型配置改动后能自动跟着变，不会停留在 setup 时的快照上
+      componentProps: () => ({
+        placeholder: '请选择图片类型',
         options: IMAGE_TYPE_OPTIONS.map((item) => ({
           label: item.label,
           value: item.value,
         })),
-        optionType: 'button',
-      },
-      defaultValue: 'avatar',
+        class: 'w-full',
+      }),
+      // 默认取当前第一个启用类型，而不是写死某个 code。
+      // 弹窗是 destroyOnClose，每次打开都会重新执行 useSchema()，所以这里取到的是最新配置。
+      // 必须放在 schema 里：表单的 initialValues 只在 setup 时算一次，
+      // 之后再 setFieldValue 会被字段挂载时应用的默认值覆盖掉。
+      defaultValue: getDefaultImageType(),
       fieldName: 'imageType',
       label: '图片类型',
       rules: z.string().min(1, '请选择图片类型'),
       formItemClass: 'col-span-2',
     },
     {
-      component: 'Select',
+      component: 'ApiSelect',
       componentProps: {
-        class: 'w-full',
+        api: async (params: { imageType?: ImageType }) => {
+          if (!params.imageType) return [];
+          const res = await getCategoryListApi({
+            contentType: 'image',
+            imageType: params.imageType,
+            page: 1,
+            pageSize: 100,
+          });
+          return res.list.map((item) => ({
+            label: item.name,
+            value: item.id,
+          }));
+        },
         placeholder: '请选择分类',
-        options: [],
+        class: 'w-full',
       },
+      // 分类必须跟着图片类型联动。原来这段被注释掉、params 写死成 avatar，
+      // 导致不管选什么类型，分类下拉框列出来的永远是头像分类。
       dependencies: {
-        async componentProps(values) {
-          if (values.imageType) {
-            const res = await getCategoryListApi({
-              contentType: 'image',
-              imageType: values.imageType,
-              page: 1,
-              pageSize: 100,
-            });
-            return {
-              options: res.list.map((item) => ({
-                label: item.name,
-                value: item.id,
-              })),
-            };
-          }
-          return { options: [] };
+        componentProps(values) {
+          return { params: { imageType: values.imageType as ImageType } };
         },
         triggerFields: ['imageType'],
       },
       fieldName: 'categoryId',
       label: '分类',
-      rules: z.string().min(1, '请选择分类'),
+      // rules: 'selectRequired',
       formItemClass: 'col-span-2',
     },
     {
@@ -115,6 +124,9 @@ export function useSchema(): VbenFormSchema[] {
       fieldName: 'imageUrl',
       label: '图片',
       help: '支持 PNG、JPG、WEBP、GIF 格式',
+      // 必须显式给 []：规则是 z.any()，vben 推不出默认值会退化成空字符串，
+      // 而 Upload 的 fileList 只接受数组，拿到 '' 会直接抛 .map is not a function
+      defaultValue: [],
       rules: z.any().refine((val) => val && val.length > 0, '请上传图片'),
       formItemClass: 'col-span-2',
       renderComponentContent: () => {

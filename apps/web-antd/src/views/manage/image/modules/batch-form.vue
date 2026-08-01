@@ -9,7 +9,11 @@ import { useVbenForm, z } from '#/adapter/form';
 import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
 import { getCategoryListApi } from '#/api/manage/category';
 import { batchImportImagesApi } from '#/api/manage/image';
-import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
+import {
+  getDefaultImageType,
+  IMAGE_TYPE_OPTIONS,
+  loadImageTypes,
+} from '#/constants/image-type';
 
 const emit = defineEmits(['success']);
 
@@ -73,16 +77,19 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-2',
   schema: [
     {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
+      component: 'Select',
+      // 函数形式：类型配置改动后能自动跟着变，不会停留在 setup 时的快照上
+      componentProps: () => ({
+        placeholder: '请选择图片类型',
         options: IMAGE_TYPE_OPTIONS.map((item) => ({
           label: item.label,
           value: item.value,
         })),
-        optionType: 'button',
-      },
-      defaultValue: 'avatar',
+        class: 'w-full',
+      }),
+      // 默认取当前第一个启用类型。弹窗是 destroyOnClose，每次打开都会重建，
+      // 所以这里取到的是最新配置；且必须放在 schema 里，事后 setFieldValue 会被覆盖
+      defaultValue: getDefaultImageType(),
       fieldName: 'imageType',
       label: '图片类型',
       rules: z.string().min(1, '请选择图片类型'),
@@ -264,9 +271,11 @@ const [Modal, modalApi] = useVbenModal({
       }
     }
   },
-  onOpenChange(isOpen) {
+  async onOpenChange(isOpen) {
     if (isOpen) {
-      formApi.resetForm();
+      // 默认类型由 schema 的 defaultValue 提供，这里只需保证配置是新的
+      loadImageTypes();
+      await formApi.resetForm();
       uploadedFiles.value = [];
       uploadingCount.value = 0;
       uploadQueue.length = 0; // 清空上传队列

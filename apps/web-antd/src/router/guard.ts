@@ -5,6 +5,7 @@ import { preferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 import { startProgress, stopProgress } from '@vben/utils';
 
+import { loadImageTypes } from '#/constants/image-type';
 import { accessRoutes, coreRouteNames } from '#/router/routes';
 import { useAuthStore } from '#/store';
 
@@ -94,6 +95,12 @@ function setupAccessGuard(router: Router) {
     // 当前登录用户拥有的角色标识列表
     const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
     const userRoles = userInfo.roles ?? [];
+
+    // 图片类型是后台可配置的，图片/分类页的表单 schema 在组件创建时就要读到它。
+    // 放在这里加载：登录后、页面渲染前只跑一次，避免"表单默认类型为空"的时序问题。
+    await loadImageTypes().catch(() => {
+      // 拉不到不该挡住整个后台，页面上的类型下拉框会退化成空列表
+    });
 
     // 生成菜单和路由
     const { accessibleMenus, accessibleRoutes } = await generateAccess({

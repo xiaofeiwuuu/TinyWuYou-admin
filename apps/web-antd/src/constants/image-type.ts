@@ -1,41 +1,114 @@
 /**
- * 图片类型常量
- * 统一管理所有图片类型相关的定义
+ * 图片类型。
+ *
+ * 类型清单已经从写死的枚举改成后端 image_types 配置表，
+ * 这里提供一个带缓存的加载器，页面挂载时拉一次即可。
+ *
+ * 仍然导出 IMAGE_TYPE_OPTIONS / LABELS / COLORS 这三个同名变量，
+ * 是为了让原有的 8 个使用点不用改写法——它们会在 loadImageTypes() 之后被填充。
+ */
+import { reactive } from 'vue';
+
+import { getImageTypeListApi } from '#/api/manage/image-type';
+
+export type ImageType = string;
+
+export interface ImageTypeOption {
+  label: string;
+  value: ImageType;
+  color: string;
+  orientation: string;
+}
+
+/**
+ * 这四个容器必须是 reactive 的。
+ *
+ * 它们是全模块共享的单例，图片管理/分类管理页在 setup 阶段就读走了内容。
+ * 如果是普通数组，在类型管理页增删改之后重新填充，那些页面不会感知到变化，
+ * 会一直显示已经删掉的类型直到刷新浏览器。
+ * 用 reactive + 函数形式的 componentProps（跑在 computed 里），改动才能自动传播。
  */
 
-/** 图片类型枚举值 */
-export type ImageType = 'avatar' | 'wallpaper' | 'pc_wallpaper' | 'emoji' | 'sticker';
+/** 下拉框选项。首次 loadImageTypes() 之前是空数组 */
+export const IMAGE_TYPE_OPTIONS: ImageTypeOption[] = reactive([]);
 
-/** 图片类型选项（用于下拉框、单选框等） */
-export const IMAGE_TYPE_OPTIONS = [
-  { label: '头像', value: 'avatar' as ImageType, color: 'blue' },
-  { label: '手机壁纸', value: 'wallpaper' as ImageType, color: 'green' },
-  { label: '平板/电脑壁纸', value: 'pc_wallpaper' as ImageType, color: 'cyan' },
-  { label: '表情包', value: 'emoji' as ImageType, color: 'orange' },
-  { label: '贴纸', value: 'sticker' as ImageType, color: 'purple' },
-] as const;
+/** 标签映射（表格展示用） */
+export const IMAGE_TYPE_LABELS: Record<string, string> = reactive({});
 
-/** 图片类型标签映射（用于表格显示） */
-export const IMAGE_TYPE_LABELS: Record<ImageType, string> = {
-  avatar: '头像',
-  wallpaper: '手机壁纸',
-  pc_wallpaper: '平板/电脑壁纸',
-  emoji: '表情包',
-  sticker: '贴纸',
-};
+/** 颜色映射 */
+export const IMAGE_TYPE_COLORS: Record<string, string> = reactive({});
 
-/** 图片类型颜色映射（用于标签颜色） */
-export const IMAGE_TYPE_COLORS: Record<ImageType, string> = {
-  avatar: 'blue',
-  wallpaper: 'green',
-  pc_wallpaper: 'cyan',
-  emoji: 'orange',
-  sticker: 'purple',
-};
+/** 朝向映射，客户端布局用；后台一般用不到 */
+export const IMAGE_TYPE_ORIENTATIONS: Record<string, string> = reactive({});
+
+let loaded = false;
+let loading: null | Promise<void> = null;
+
+/**
+ * 加载图片类型配置。
+ *
+ * 并发调用只会真正请求一次；已加载过则直接返回，
+ * 需要强制刷新（比如在类型管理页改完）时传 force。
+ */
+export async function loadImageTypes(force = false): Promise<void> {
+  if (loaded && !force) {
+    return;
+  }
+  if (loading && !force) {
+    return loading;
+  }
+
+  loading = (async () => {
+    let list: Awaited<ReturnType<typeof getImageTypeListApi>>['list'];
+    try {
+      ({ list } = await getImageTypeListApi());
+    } finally {
+      // 请求失败时把 loading 清掉，否则后续调用会一直拿到这个已 reject 的 promise
+      loading = null;
+    }
+
+    // 原地清空再填充，保证已经引用了这些数组/对象的地方能拿到新值
+    IMAGE_TYPE_OPTIONS.length = 0;
+    Object.keys(IMAGE_TYPE_LABELS).forEach((k) => delete IMAGE_TYPE_LABELS[k]);
+    Object.keys(IMAGE_TYPE_COLORS).forEach((k) => delete IMAGE_TYPE_COLORS[k]);
+    Object.keys(IMAGE_TYPE_ORIENTATIONS).forEach(
+      (k) => delete IMAGE_TYPE_ORIENTATIONS[k],
+    );
+
+    list
+      .filter((item) => item.isEnabled === 1)
+      .forEach((item) => {
+        IMAGE_TYPE_OPTIONS.push({
+          label: item.name,
+          value: item.code,
+          color: item.color,
+          orientation: item.orientation,
+        });
+        IMAGE_TYPE_LABELS[item.code] = item.name;
+        IMAGE_TYPE_COLORS[item.code] = item.color;
+        IMAGE_TYPE_ORIENTATIONS[item.code] = item.orientation;
+      });
+
+    loaded = true;
+  })();
+
+  return loading;
+}
 
 /**
  * 获取图片类型选项（向后兼容旧代码）
  */
 export function getImageTypeOptions() {
   return IMAGE_TYPE_OPTIONS;
+}
+
+/**
+ * 新建表单的默认图片类型 = 排序最靠前的那个启用类型。
+ *
+ * 不能写死成某个 code：类型现在是后台可配置的，写死的那个随时可能被停用或删除，
+ * 那样表单会带着一个后端不认的值提交，直接被校验打回 400。
+ * 调用前请确保 loadImageTypes() 已完成，否则返回 undefined。
+ */
+export function getDefaultImageType(): ImageType | undefined {
+  return IMAGE_TYPE_OPTIONS[0]?.value;
 }

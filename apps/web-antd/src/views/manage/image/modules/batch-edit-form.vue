@@ -10,7 +10,7 @@ import { Button, message } from 'ant-design-vue';
 import { useVbenForm } from '#/adapter/form';
 import { getCategoryListApi } from '#/api/manage/category';
 import { batchUpdateImagesApi } from '#/api/manage/image';
-import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
+import { IMAGE_TYPE_OPTIONS, loadImageTypes } from '#/constants/image-type';
 
 const emit = defineEmits(['success']);
 const batchData = ref<{ selectedCount: number; selectedIds: number[] }>();
@@ -23,18 +23,19 @@ const [Form, formApi] = useVbenForm({
   layout: 'horizontal',
   schema: [
     {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: '保持不变', value: undefined },
-          ...IMAGE_TYPE_OPTIONS.map((item) => ({
-            label: item.label,
-            value: item.value,
-          })),
-        ],
-        optionType: 'button',
-      },
+      component: 'Select',
+      // 函数形式：类型配置改动后能自动跟着变，不会停留在 setup 时的快照上
+      // 批量修改的默认值是「保持不变」，不是第一个类型——
+      // 这里选中就意味着把选中的图片全部改成该类型，不能替用户做决定
+      componentProps: () => ({
+        allowClear: true,
+        placeholder: '保持不变',
+        options: IMAGE_TYPE_OPTIONS.map((item) => ({
+          label: item.label,
+          value: item.value,
+        })),
+        class: 'w-full',
+      }),
       defaultValue: undefined,
       fieldName: 'imageType',
       label: '图片类型',
@@ -223,8 +224,11 @@ const [Modal, modalApi] = useVbenModal({
       }
     }
   },
-  onOpenChange(isOpen) {
+  async onOpenChange(isOpen) {
     if (isOpen) {
+      // 先确保类型配置已就绪，否则下拉框是空的。
+      // 这里不设默认类型：批量修改保持「不选=保持不变」的语义
+      await loadImageTypes();
       const data = modalApi.getData<{
         selectedCount: number;
         selectedIds: number[];

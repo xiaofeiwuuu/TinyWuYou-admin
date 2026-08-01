@@ -15,6 +15,15 @@ const routes: RouteRecordRaw[] = [
     path: '/content',
     children: [
       {
+        name: 'ContentImageType',
+        path: '/content/image-type',
+        component: () => import('#/views/manage/image-type/index.vue'),
+        meta: {
+          icon: 'lucide:layout-grid',
+          title: $t('图片类型'),
+        },
+      },
+      {
         name: 'ContentCategory',
         path: '/content/category',
         component: () => import('#/views/manage/category/index.vue'),

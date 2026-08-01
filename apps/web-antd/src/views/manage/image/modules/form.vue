@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createImageApi, updateImageApi } from '#/api/manage/image';
+import { loadImageTypes } from '#/constants/image-type';
 
 import { useSchema } from '../data';
 
@@ -26,9 +27,12 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-2',
 });
 
-function resetForm() {
-  formApi.resetForm();
-  formApi.setValues(formData.value || {});
+// 新增态的默认类型已经写进 schema，resetForm 就会带上，这里不用再单独设
+async function resetForm() {
+  await formApi.resetForm();
+  if (formData.value) {
+    formApi.setValues(formData.value);
+  }
 }
 
 const [Modal, modalApi] = useVbenModal({
@@ -68,13 +72,15 @@ const [Modal, modalApi] = useVbenModal({
         }
         data.thumbnailUrl = thumbnailUrl || null;
 
-        // 自动填充图片宽高和文件大小
+        // 自动填充图片宽高、文件大小和哈希值
         if (doneFile?.response) {
           const metadata = doneFile.response;
           data.width = metadata.width;
           data.height = metadata.height;
           data.aspectRatio = metadata.aspectRatio;
           data.fileSize = metadata.size;
+          data.fileHash = metadata.fileHash;
+          data.perceptualHash = metadata.perceptualHash;
         }
       }
 
@@ -89,7 +95,7 @@ const [Modal, modalApi] = useVbenModal({
       }
     }
   },
-  onOpenChange(isOpen) {
+  async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<ImageManageApi.ImageInfo>();
       if (data) {
@@ -108,18 +114,26 @@ const [Modal, modalApi] = useVbenModal({
         // 转换图片 URL 为 Upload 组件期望的格式
         const formValues = { ...data };
 
-        if (formValues.imageUrl && typeof formValues.imageUrl === 'string') {
-          formValues.imageUrl = [
-            {
-              uid: '-1',
-              name: formValues.imageUrl.split('/').pop() || 'image',
-              status: 'done',
-              url: formValues.imageUrl,
-            },
-          ];
-        }
+        // Upload 的 fileList 只接受数组。历史数据里存在 image_url 为空的记录，
+        // 空字符串原样传给 Upload 会抛 .map is not a function，所以要兜底成 []
+        formValues.imageUrl =
+          formValues.imageUrl && typeof formValues.imageUrl === 'string'
+            ? [
+                {
+                  uid: '-1',
+                  name: formValues.imageUrl.split('/').pop() || 'image',
+                  status: 'done',
+                  url: formValues.imageUrl,
+                },
+              ]
+            : Array.isArray(formValues.imageUrl)
+              ? formValues.imageUrl
+              : [];
 
         formApi.setValues(formValues);
+        // 不 await：选项是响应式的，加载完会自动填进下拉框，
+        // 放在 setValues 之前 await 会让表单先渲染一帧空值
+        loadImageTypes();
       } else {
         formData.value = undefined;
 
@@ -133,7 +147,9 @@ const [Modal, modalApi] = useVbenModal({
           },
         ]);
 
-        formApi.resetForm();
+        // 默认类型由 schema 的 defaultValue 提供，这里只需保证配置是新的
+        loadImageTypes();
+        await formApi.resetForm();
       }
     }
   },

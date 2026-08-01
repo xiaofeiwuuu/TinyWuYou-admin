@@ -230,7 +230,8 @@ const formOptions: VbenFormProps = {
       component: 'Select',
       fieldName: 'imageType',
       label: '图片类型',
-      componentProps: {
+      // 函数形式：类型配置改动后能自动跟着变，不会停留在 setup 时的快照上
+      componentProps: () => ({
         allowClear: true,
         dropdownMatchSelectWidth: false,
         placeholder: '全部',
@@ -238,7 +239,7 @@ const formOptions: VbenFormProps = {
           label: item.label,
           value: item.value,
         })),
-      },
+      }),
     },
     {
       component: 'Select',

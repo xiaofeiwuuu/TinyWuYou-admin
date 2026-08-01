@@ -8,16 +8,15 @@ import { useVbenModal } from '@vben/common-ui';
 import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { createTaskApi, updateTaskApi } from '#/api/manage/task';
+import { updateTaskApi } from '#/api/manage/task';
 
 import { useSchema } from '../data';
 
 const emit = defineEmits(['success']);
 const formData = ref<TaskManageApi.TaskInfo>();
 
-const getTitle = computed(() => {
-  return formData.value?.id ? '编辑任务' : '新增任务';
-});
+// 任务固定四条，只有编辑没有新增
+const getTitle = computed(() => `编辑任务 - ${formData.value?.taskName ?? ''}`);
 
 const [Form, formApi] = useVbenForm({
   layout: 'horizontal',
@@ -38,9 +37,12 @@ const [Modal, modalApi] = useVbenModal({
       const data = await formApi.getValues();
 
       try {
-        await (formData.value?.id
-          ? updateTaskApi(formData.value.id, data as TaskManageApi.SaveParams)
-          : createTaskApi(data as TaskManageApi.SaveParams));
+        // taskType 是只读展示字段，不提交（后端 UpdateTaskDto 里也没有它）
+        const { taskType: _taskType, ...payload } = data;
+        await updateTaskApi(
+          formData.value!.id,
+          payload as TaskManageApi.SaveParams,
+        );
         modalApi.close();
         emit('success');
       } finally {
@@ -51,13 +53,8 @@ const [Modal, modalApi] = useVbenModal({
   onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<TaskManageApi.TaskInfo>();
-      if (data) {
-        formData.value = data;
-        formApi.setValues(data);
-      } else {
-        formData.value = undefined;
-        formApi.resetForm();
-      }
+      formData.value = data;
+      formApi.setValues(data ?? {});
     }
   },
 });

@@ -51,6 +51,12 @@ export namespace ImageManageApi {
     description?: string;
     imageUrl: string;
     thumbnailUrl?: string;
+    width?: number;
+    height?: number;
+    aspectRatio?: string;
+    fileSize?: number;
+    fileHash?: string;
+    perceptualHash?: string;
     tags?: string;
     isVip?: number;
     isRecommend?: number;

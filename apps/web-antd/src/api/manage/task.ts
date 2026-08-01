@@ -33,8 +33,11 @@ export namespace TaskManageApi {
   }
 
   /** 创建/更新任务 */
+  /**
+   * 更新任务配置。
+   * taskType 不在其中：它是三端硬编码的分发 key，由系统固定。
+   */
   export interface SaveParams {
-    taskType: string;
     taskName: string;
     taskDesc?: string;
     rewardCount: number;
@@ -52,12 +55,6 @@ export async function getTaskListApi(params: TaskManageApi.ListParams) {
   return requestClient.get<TaskManageApi.ListResult>('/admin/tasks', { params });
 }
 
-/**
- * 创建任务
- */
-export async function createTaskApi(data: TaskManageApi.SaveParams) {
-  return requestClient.post('/admin/tasks', data);
-}
 
 /**
  * 更新任务
@@ -66,12 +63,6 @@ export async function updateTaskApi(id: number, data: Partial<TaskManageApi.Save
   return requestClient.put(`/admin/tasks/${id}`, data);
 }
 
-/**
- * 删除任务
- */
-export async function deleteTaskApi(id: number) {
-  return requestClient.delete(`/admin/tasks/${id}`);
-}
 
 /**
  * 切换任务状态

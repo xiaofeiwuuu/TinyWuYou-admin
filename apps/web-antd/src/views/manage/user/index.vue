@@ -26,6 +26,7 @@ import {
   updateUserDownloadCountApi,
   updateUserRemarkApi,
 } from '#/api/manage/user';
+import { copyWithTip } from '#/utils/clipboard';
 
 import VipForm from './modules/vip-form.vue';
 
@@ -45,10 +46,10 @@ const formOptions: VbenFormProps = {
   schema: [
     {
       component: 'Input',
-      fieldName: 'id',
-      label: 'ID',
+      fieldName: 'uid',
+      label: 'UID',
       componentProps: {
-        placeholder: '用户ID',
+        placeholder: '8位数字，精确匹配',
       },
     },
     {
@@ -56,7 +57,7 @@ const formOptions: VbenFormProps = {
       fieldName: 'keyword',
       label: '搜索',
       componentProps: {
-        placeholder: '昵称/OpenID',
+        placeholder: '昵称/UID/邀请码/OpenID',
       },
     },
     {
@@ -152,7 +153,24 @@ async function onStatusChange(newStatus: number, row: UserManageApi.UserInfo) {
 
 const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
   columns: [
-    { title: 'ID', field: 'id', width: 80 },
+    {
+      title: 'UID',
+      field: 'uid',
+      width: 110,
+      slots: {
+        // 客服场景常要把 uid 复制出去核对，点一下就复制
+        default: ({ row }) =>
+          h(
+            'span',
+            {
+              class: 'cursor-pointer select-all font-mono hover:underline',
+              title: '点击复制 UID',
+              onClick: () => copyWithTip(row.uid, `已复制 ${row.uid}`),
+            },
+            row.uid ?? '-',
+          ),
+      },
+    },
     // { title: '序号', type: 'seq', width: 50 },
     // {
     //   title: '头像',
@@ -194,7 +212,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
             {
               style: { color: platform.color, fontWeight: 500 },
             },
-            `${platform.icon} ${platform.name}`,
+            `${platform.name}`,
           );
         },
       },
@@ -270,6 +288,24 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       field: 'createdAt',
       width: 180,
       formatter: ({ cellValue }) => formatDate(cellValue),
+    },
+    {
+      title: '邀请码',
+      field: 'inviteCode',
+      width: 100,
+      slots: {
+        default: ({ row }) =>
+          h(
+            'span',
+            {
+              class: 'cursor-pointer select-all font-mono hover:underline',
+              title: '点击复制邀请码',
+              onClick: () =>
+                copyWithTip(row.inviteCode, `已复制 ${row.inviteCode}`),
+            },
+            row.inviteCode ?? '-',
+          ),
+      },
     },
     {
       title: '操作',
@@ -379,7 +415,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
         return await getUserListApi({
           page: page.currentPage,
           pageSize: page.pageSize,
-          id: formValues.id ? Number(formValues.id) : undefined,
+          uid: formValues.uid ? String(formValues.uid).trim() : undefined,
           keyword: formValues.keyword || undefined,
           userLevel:
             formValues.userLevel !== undefined && formValues.userLevel !== ''

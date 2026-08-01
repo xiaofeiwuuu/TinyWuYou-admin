@@ -28,7 +28,15 @@ export namespace AuthApi {
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  return requestClient.post<AuthApi.LoginResult>('/auth/admin/login', data);
+  // 只提交接口声明的字段。
+  // 登录表单里还有 vben 的滑块验证 captcha，那是纯前端的人机校验（一个布尔值），
+  // 对服务端没有任何意义；而 authLogin 的入参类型是 Recordable<any>，
+  // 整个表单值会被原样透传，TS 也拦不住。
+  const { username, password } = data;
+  return requestClient.post<AuthApi.LoginResult>('/auth/admin/login', {
+    username,
+    password,
+  });
 }
 
 /**

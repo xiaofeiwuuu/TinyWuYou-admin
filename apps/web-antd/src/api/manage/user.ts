@@ -5,7 +5,10 @@ export namespace UserManageApi {
   export interface ListParams {
     page?: number;
     pageSize?: number;
+    /** 内部自增主键 */
     id?: number;
+    /** 对外用户标识（8位数字，精确匹配） */
+    uid?: string;
     keyword?: string;
     userLevel?: number;
     isVip?: number;
@@ -14,6 +17,10 @@ export namespace UserManageApi {
   /** 用户信息 */
   export interface UserInfo {
     id: number;
+    /** 对外用户标识（8位数字），客服和用户沟通用的就是它 */
+    uid: string;
+    /** 邀请码（6位），出现在分享链接里 */
+    inviteCode: string;
     openid: string;
     nickname: string;
     avatarUrl: string;

@@ -8,13 +8,11 @@ import type { TaskManageApi } from '#/api/manage/task';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
-import { Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  deleteTaskApi,
   getTaskListApi,
   updateTaskApi,
 } from '#/api/manage/task';
@@ -31,39 +29,11 @@ function onEdit(row: TaskManageApi.TaskInfo) {
   formModalApi.setData(row).open();
 }
 
-function onCreate() {
-  formModalApi.setData(null).open();
-}
-
-async function onDelete(row: TaskManageApi.TaskInfo) {
-  const hideLoading = message.loading({
-    content: `正在删除任务 ${row.taskName}...`,
-    duration: 0,
-    key: 'action_process_msg',
-  });
-
-  try {
-    await deleteTaskApi(row.id);
-    message.success({
-      content: `任务 ${row.taskName} 删除成功`,
-      key: 'action_process_msg',
-    });
-    refreshGrid();
-  } catch {
-    hideLoading();
-    message.error('删除失败');
-  }
-}
-
 function onActionClick({
   code,
   row,
 }: OnActionClickParams<TaskManageApi.TaskInfo>) {
   switch (code) {
-    case 'delete': {
-      onDelete(row);
-      break;
-    }
     case 'edit': {
       onEdit(row);
       break;
@@ -105,9 +75,7 @@ async function onStatusChange(newStatus: number, row: TaskManageApi.TaskInfo) {
 }
 
 const { hasAccessByCodes } = useAccess();
-const canCreate = hasAccessByCodes(['task:create']);
 const canEdit = hasAccessByCodes(['task:edit']);
-const canDelete = hasAccessByCodes(['task:delete']);
 
 const formOptions: VbenFormProps = {
   collapsed: false,
@@ -154,7 +122,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
       onActionClick,
       canEdit ? onStatusChange : undefined,
       canEdit,
-      canDelete,
     ),
     height: 'auto',
     keepSource: true,
@@ -202,10 +169,11 @@ function refreshGrid() {
     <FormModal @success="refreshGrid" />
     <Grid table-title="任务配置">
       <template #toolbar-tools>
-        <Button v-if="canCreate" type="primary" @click="onCreate">
-          <Plus class="size-5" />
-          新增任务
-        </Button>
+        <!-- 任务是固定四条（新人/签到/邀请/广告），每条都对应一段后端发放逻辑
+             和小程序点击行为，只能改配置不能增删，所以这里没有"新增"入口 -->
+        <span class="text-muted-foreground text-xs">
+          任务类型固定，仅可调整奖励与启用状态
+        </span>
       </template>
     </Grid>
   </Page>

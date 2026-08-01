@@ -35,15 +35,14 @@ export function useSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
-        maxLength: 20,
-        placeholder: '请输入任务类型',
+        // 任务类型是三端硬编码的分发 key（后端按它决定发放逻辑，
+        // 小程序按它决定点击行为），改掉等于把这条任务的逻辑整个断开，
+        // 所以只读展示，不参与提交。
+        disabled: true,
       },
       fieldName: 'taskType',
       label: '任务类型',
-      rules: z
-        .string()
-        .min(1, '请输入任务类型')
-        .max(20, '任务类型不能超过20个字符'),
+      help: '任务类型由系统固定，不可修改',
     },
     {
       component: 'Input',
@@ -149,23 +148,20 @@ export function useColumns(
     row: TaskManageApi.TaskInfo,
   ) => PromiseLike<boolean | undefined>,
   canEdit?: boolean,
-  canDelete?: boolean,
 ): VxeTableGridOptions<TaskManageApi.TaskInfo>['columns'] {
   // 根据权限生成操作按钮列表
-  const operations = [];
-  if (canEdit) {
-    operations.push('edit');
-  }
-  if (canDelete) {
-    operations.push('delete');
-  }
+  // 任务固定四条，只保留编辑
+  const operations = canEdit ? ['edit'] : [];
 
   return [
-    { title: '序号', type: 'seq', width: 50 },
     {
       title: '任务类型',
       field: 'taskType',
       minWidth: 120,
+      cellRender: {
+        name: 'CellTag',
+        options: getTaskTypeOptions(),
+      },
     },
     {
       title: '任务名称',
@@ -181,20 +177,20 @@ export function useColumns(
     {
       title: '奖励次数',
       field: 'rewardCount',
-      width: 100,
+      minWidth: 100,
       formatter: ({ cellValue }) => `${cellValue}次`,
     },
     {
       title: '每日上限',
       field: 'dailyLimit',
-      width: 100,
+      minWidth: 100,
       formatter: ({ cellValue }) =>
         cellValue === 0 ? '不限' : `${cellValue}次`,
     },
     {
       title: '刷新类型',
       field: 'refreshType',
-      width: 100,
+      minWidth: 100,
       cellRender: {
         name: 'CellTag',
         options: getRefreshTypeOptions(),
@@ -203,12 +199,12 @@ export function useColumns(
     {
       title: '排序',
       field: 'sortOrder',
-      width: 80,
+      minWidth: 80,
     },
     {
       title: '状态',
       field: 'isEnabled',
-      width: 100,
+      minWidth: 100,
       cellRender: {
         name: onStatusChange ? 'CellSwitch' : 'CellTag',
         attrs: { beforeChange: onStatusChange },
@@ -218,14 +214,14 @@ export function useColumns(
     {
       title: '创建时间',
       field: 'createdAt',
-      width: 180,
+      minWidth: 180,
       formatter: ({ cellValue }) => {
         if (!cellValue) return '-';
         return new Date(cellValue).toLocaleString('zh-CN');
       },
     },
     {
-      align: 'right',
+      align: 'center',
       cellRender: {
         attrs: {
           nameField: 'taskName',

@@ -177,4 +177,44 @@ export class CryptoUtil {
     const hmac = CryptoJS.HmacSHA256(data, keyWordArray);
     return hmac.toString(CryptoJS.enc.Hex);
   }
+
+  /**
+   * SHA-256（hex）
+   */
+  static sha256(data: string): string {
+    return CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
+  }
+
+  /**
+   * 生成一次性随机数（防重放）。浏览器有 CSPRNG，直接用。
+   */
+  static generateNonce(): string {
+    return CryptoJS.lib.WordArray.random(24).toString(CryptoJS.enc.Hex);
+  }
+
+  /**
+   * 计算请求签名。
+   *
+   * 签名内容为 method + path + timestamp + nonce + sha256(body)，与服务端一致。
+   * 原来只签 timestamp + url：不含 body（改请求体不影响签名）、不含 method
+   * （PUT 的签名可以拿去当 DELETE 用）、没有 nonce（抓到一次可在 5 分钟内重放）。
+   */
+  static buildSignature(params: {
+    method: string;
+    path: string;
+    timestamp: string;
+    nonce: string;
+    body: string;
+    aesKey: string;
+  }): string {
+    const bodyHash = CryptoUtil.sha256(params.body);
+    const signData = [
+      params.method.toUpperCase(),
+      params.path,
+      params.timestamp,
+      params.nonce,
+      bodyHash,
+    ].join('\n');
+    return CryptoUtil.hmacSha256(signData, params.aesKey);
+  }
 }

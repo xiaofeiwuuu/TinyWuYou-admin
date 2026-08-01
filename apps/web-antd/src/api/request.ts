@@ -33,6 +33,14 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   });
 
   /**
+   * 最近一次 401 的后端原因。
+   *
+   * doReAuthenticate 的签名里拿不到 error，但"被其他设备顶下线"和"登录过期"
+   * 对用户来说是两回事，必须区分开，所以用一个变量把原因带过去。
+   */
+  let lastAuthFailReason = '';
+
+  /**
    * 重新认证逻辑
    */
   async function doReAuthenticate() {
@@ -43,6 +51,10 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     }
 
     console.warn('Access token or refresh token is invalid or expired. ');
+    if (lastAuthFailReason) {
+      message.error(lastAuthFailReason);
+      lastAuthFailReason = '';
+    }
     const accessStore = useAccessStore();
     const authStore = useAuthStore();
     accessStore.setAccessToken(null);
@@ -126,24 +138,30 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       const aesKey = keyManager.getAesKey();
       if (aesKey && config.method && config.method.toUpperCase() !== 'GET') {
         try {
-          // 生成时间戳
+          const method = config.method.toUpperCase();
           const timestamp = Date.now().toString();
+          const nonce = CryptoUtil.generateNonce();
 
-          // body 中加入 timestamp，没有 data 时创建空对象
-          const dataWithTimestamp = { ...(config.data || {}), timestamp };
+          // DELETE 按 HTTP 惯例不带 body，只签名不加密
+          let encrypted = '';
+          if (method !== 'DELETE' || config.data) {
+            const dataWithTimestamp = { ...(config.data || {}), timestamp };
+            encrypted = CryptoUtil.aesEncrypt(JSON.stringify(dataWithTimestamp), aesKey);
+            config.data = { encrypted };
+          }
 
-          // 加密数据
-          const encrypted = CryptoUtil.aesEncrypt(
-            JSON.stringify(dataWithTimestamp),
-            aesKey,
-          );
-          config.data = { encrypted };
-
-          // header 中添加时间戳和签名
-          const fullUrl = `/api${url}`; // 后端收到的是带 /api 前缀的 URL
-          const signature = CryptoUtil.hmacSha256(`${timestamp}${fullUrl}`, aesKey);
+          // 后端拿到的 path 是带 /api 前缀且不含查询串的
+          const path = `/api${url.split('?')[0]}`;
           config.headers['x-timestamp'] = timestamp;
-          config.headers['x-signature'] = signature;
+          config.headers['x-nonce'] = nonce;
+          config.headers['x-signature'] = CryptoUtil.buildSignature({
+            method,
+            path,
+            timestamp,
+            nonce,
+            body: encrypted,
+            aesKey,
+          });
         } catch (error) {
           console.error('[Request] 加密失败:', error);
         }
@@ -230,6 +248,18 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       successCode: 0,
     }),
   );
+
+  // 必须注册在鉴权拦截器之前：拦截器按注册顺序执行，
+  // 这里先把 401 的原因记下来，后面 doReAuthenticate 才拿得到
+  client.addResponseInterceptor({
+    rejected: (error: any) => {
+      if (error?.response?.status === 401) {
+        const data = error.response.data ?? {};
+        lastAuthFailReason = data.message ?? data.error ?? '';
+      }
+      throw error;
+    },
+  });
 
   // token过期的处理
   client.addResponseInterceptor(

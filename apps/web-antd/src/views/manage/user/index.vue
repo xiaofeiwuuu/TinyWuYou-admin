@@ -197,10 +197,10 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
             string,
             { color: string; icon: string; name: string }
           > = {
+            // 目前只支持微信（其它平台的小程序都要求企业主体才能发布）。
+            // 保留下面的兜底分支：历史数据里若有别的 platform 值，
+            // 直接显示原始值，而不是显示成空白让人以为数据坏了。
             weixin: { name: '微信', color: '#07c160', icon: '🟢' },
-            xiaohongshu: { name: '小红书', color: '#ff2442', icon: '🔴' },
-            douyin: { name: '抖音', color: '#000000', icon: '⚫' },
-            alipay: { name: '支付宝', color: '#1677ff', icon: '🔵' },
           };
           const platform = platformMap[row.platform] || {
             name: row.platform,

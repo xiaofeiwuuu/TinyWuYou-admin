@@ -34,6 +34,12 @@ export namespace UserManageApi {
     remark: string;
     platform: string;
     createdAt: string;
+    /** 最后登录时间。本次改动前的登录没有记录，老用户为 null */
+    lastLoginTime: null | string;
+    /** 最后登录 IP，每次登录刷新 */
+    lastLoginIp: null | string;
+    /** 注册 IP，只在建号时写一次 */
+    registerIp: null | string;
   }
 
   /** 列表返回 */

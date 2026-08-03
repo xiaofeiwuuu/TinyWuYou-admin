@@ -290,6 +290,30 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       formatter: ({ cellValue }) => formatDate(cellValue),
     },
     {
+      title: '最后登录',
+      field: 'lastLoginTime',
+      width: 180,
+      // 老用户这一列会是空的：登录时间是这次才开始记的，
+      // 之前的登录没有留下记录，显示成"—"而不是空白，免得看着像加载失败
+      formatter: ({ cellValue }) => (cellValue ? formatDate(cellValue) : '—'),
+    },
+    {
+      title: '登录IP',
+      field: 'lastLoginIp',
+      width: 140,
+      showOverflow: true,
+      formatter: ({ cellValue }) => cellValue || '—',
+    },
+    {
+      title: '注册IP',
+      field: 'registerIp',
+      width: 140,
+      showOverflow: true,
+      // 和登录 IP 分开：注册 IP 只在建号时写一次，用来看"这批号从哪来的"，
+      // 查刷号时比最后登录 IP 有用——刷号的人换网络，但注册那一刻的来源改不了
+      formatter: ({ cellValue }) => cellValue || '—',
+    },
+    {
       title: '邀请码',
       field: 'inviteCode',
       width: 100,

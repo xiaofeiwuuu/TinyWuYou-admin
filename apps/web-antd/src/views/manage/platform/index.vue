@@ -13,6 +13,7 @@ import {
   getSystemConfigListApi,
   updateSystemConfigApi,
 } from '#/api/manage/system-config';
+import CertStatus from './cert-status.vue';
 
 const loading = ref(false);
 const platformDisabled = ref(true);
@@ -330,6 +331,9 @@ onMounted(() => {
 <template>
   <Page auto-content-height>
     <div class="space-y-4">
+      <!-- 放在最上面：证书出问题时全站图片会挂，这类状态埋在页面下方等于没有 -->
+      <CertStatus />
+
       <!-- 微信平台配置 -->
       <Card title="微信小程序配置" :bordered="false">
         <template #extra>

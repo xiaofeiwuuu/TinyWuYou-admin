@@ -39,6 +39,8 @@ const ANNOUNCE_CONTENT_MAX = 2000;
 
 const form = reactive<AppInfoApi.AppInfo>({
   app_name: '',
+  app_slogan: '',
+  faq: [],
   app_logo: '',
   share_title: '',
   contact_info: { wechat: '', email: '', workTime: '' },
@@ -100,6 +102,8 @@ async function loadData() {
   try {
     const data = await getAppInfoApi();
     form.app_name = data.app_name ?? '';
+    form.app_slogan = data.app_slogan ?? '';
+    form.faq = Array.isArray(data.faq) ? data.faq.map((f) => ({ ...f })) : [];
     form.app_logo = data.app_logo ?? '';
     form.share_title = data.share_title ?? '';
     form.contact_info = {
@@ -139,6 +143,9 @@ async function handleSave() {
   try {
     await updateAppInfoApi([
       { key: 'app_name', value: appName },
+      { key: 'app_slogan', value: form.app_slogan.trim() },
+      // 标题为空的行后端会丢掉，这里不用先过滤
+      { key: 'faq', value: form.faq.map((f) => ({ ...f })) },
       { key: 'app_logo', value: form.app_logo },
       { key: 'share_title', value: form.share_title.trim() },
       { key: 'contact_info', value: { ...form.contact_info } },
@@ -151,6 +158,21 @@ async function handleSave() {
   } finally {
     saving.value = false;
   }
+}
+
+function addFaq() {
+  form.faq.push({ title: '', content: '' });
+}
+
+function removeFaq(index: number) {
+  form.faq.splice(index, 1);
+}
+
+/** 上移一条，方便把常问的排到前面 */
+function moveFaqUp(index: number) {
+  if (index === 0) return;
+  const [item] = form.faq.splice(index, 1);
+  form.faq.splice(index - 1, 0, item!);
 }
 
 /**
@@ -226,6 +248,16 @@ onMounted(loadData);
           </div>
 
           <div>
+            <div class="mb-1 font-medium">一句话标语</div>
+            <Input
+              v-model:value="form.app_slogan"
+              :maxlength="TEXT_MAX"
+              placeholder="显示在「关于我们」页的名称下方"
+              show-count
+            />
+          </div>
+
+          <div>
             <div class="mb-1 font-medium">分享文案</div>
             <Input
               v-model:value="form.share_title"
@@ -265,6 +297,53 @@ onMounted(loadData);
               :maxlength="100"
               placeholder="例如 工作日 9:00-18:00"
             />
+          </div>
+        </div>
+      </Card>
+
+      <Card :bordered="false" :loading="loading" title="常见问题">
+        <div class="mx-auto max-w-3xl space-y-4">
+          <div
+            v-for="(item, index) in form.faq"
+            :key="index"
+            class="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+          >
+            <div class="mb-2 flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-500">{{ index + 1 }}</span>
+              <Input
+                v-model:value="item.title"
+                :maxlength="60"
+                class="flex-1"
+                placeholder="问题标题"
+              />
+              <AButton
+                :disabled="index === 0"
+                size="small"
+                title="上移"
+                @click="moveFaqUp(index)"
+              >
+                ↑
+              </AButton>
+              <AButton danger size="small" @click="removeFaq(index)">删除</AButton>
+            </div>
+            <Textarea
+              v-model:value="item.content"
+              :auto-size="{ minRows: 2, maxRows: 8 }"
+              :maxlength="1000"
+              placeholder="回答内容"
+              show-count
+            />
+          </div>
+
+          <div v-if="form.faq.length === 0" class="py-8 text-center text-sm text-gray-400">
+            还没有任何问题，小程序里「常见问题」页会显示空态
+          </div>
+
+          <AButton block type="dashed" @click="addFaq">+ 添加一条</AButton>
+
+          <div class="text-xs text-gray-400">
+            顺序即小程序里的显示顺序，把用户最常问的排在前面。
+            标题留空的条目保存时会被自动丢弃。
           </div>
         </div>
       </Card>

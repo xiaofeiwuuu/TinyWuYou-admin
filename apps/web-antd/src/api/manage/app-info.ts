@@ -20,9 +20,19 @@ export namespace AppInfoApi {
     version: number;
   }
 
+  /** 常见问题的一条 */
+  export interface FaqItem {
+    title: string;
+    content: string;
+  }
+
   /** 后端返回的原始形态，键名与 system_config 的 config_key 一致 */
   export interface AppInfo {
     app_name: string;
+    /** 一句话标语，显示在关于我们页的名称下方 */
+    app_slogan: string;
+    /** 常见问题列表 */
+    faq: FaqItem[];
     /**
      * Logo 的相对路径（如 /uploads/2026/08/xxx.png）。
      * 后端只接受本站上传的地址，存的是 pathname，换域名不用刷数据。

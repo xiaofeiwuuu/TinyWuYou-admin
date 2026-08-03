@@ -11,7 +11,12 @@ export namespace OpsStatusApi {
   }
 
   export interface AllStatus {
-    cert: Status;
+    /**
+     * 后端是否启用了运维上报（由 .env 的 OPS_REPORT_TOKEN 决定）。
+     * 为 false 时不会返回任何状态数据，前端整块隐藏。
+     */
+    enabled: boolean;
+    cert?: Status;
   }
 }
 

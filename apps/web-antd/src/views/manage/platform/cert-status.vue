@@ -15,6 +15,16 @@ import { getOpsStatusApi } from '#/api/manage/ops-status';
  * CDN 的话，要等到过期那天全站图片一起挂才会发现。
  */
 
+/**
+ * 是否启用。由后端 .env 的 OPS_REPORT_TOKEN 决定，没配就整块不显示。
+ *
+ * 这块是可选功能：证书续期上报依赖服务器上的定制脚本（acme.sh + 特定 CDN 厂商），
+ * 换一套部署环境就未必适用。对不用它的人显示一个永远"未收到上报"的黄色告警，
+ * 比不显示更糟——假告警会让人习惯性忽略掉所有告警，真出事时也不看了。
+ *
+ * 初值 false：接口没回来之前不渲染，避免闪一下再消失。
+ */
+const enabled = ref(false);
 const loading = ref(true);
 const cert = ref<null | OpsStatusApi.Status>(null);
 
@@ -63,8 +73,12 @@ async function load() {
   loading.value = true;
   try {
     const data = await getOpsStatusApi();
-    cert.value = data.cert;
+    enabled.value = Boolean(data?.enabled);
+    cert.value = data?.cert ?? null;
   } catch {
+    // 取不到就当没启用：这块是可选功能，不该因为它自己出错
+    // 而在页面上留下一个报错卡片，那会让人误以为是证书出了问题
+    enabled.value = false;
     cert.value = null;
   } finally {
     loading.value = false;
@@ -80,7 +94,11 @@ onMounted(load);
 </script>
 
 <template>
-  <Card :bordered="false" :loading="loading" title="HTTPS 证书">
+  <!--
+    未启用（后端没配 OPS_REPORT_TOKEN）时整块不渲染。
+    加载期间也不渲染：先显示一个骨架再消失，会让人以为页面出了问题。
+  -->
+  <Card v-if="!loading && enabled" :bordered="false" title="HTTPS 证书">
     <Alert
       v-if="verdict"
       :message="verdict.text"

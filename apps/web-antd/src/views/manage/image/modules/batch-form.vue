@@ -220,7 +220,6 @@ const [Modal, modalApi] = useVbenModal({
       const images = doneFiles.map((file: any) => {
         const response = file.response;
         let url = response.url;
-        let thumbnailUrl = response.thumbnailUrl;
 
         // 确保只保存相对路径到数据库（去除域名部分）
         if (url && url.includes('://')) {
@@ -231,18 +230,8 @@ const [Modal, modalApi] = useVbenModal({
           }
         }
 
-        // 处理缩略图URL
-        if (thumbnailUrl && thumbnailUrl.includes('://')) {
-          try {
-            thumbnailUrl = new URL(thumbnailUrl).pathname;
-          } catch {
-            console.warn('解析缩略图URL失败，使用原始值:', thumbnailUrl);
-          }
-        }
-
         return {
           url,
-          thumbnailUrl,
           width: response.width,
           height: response.height,
           aspectRatio: response.aspectRatio,

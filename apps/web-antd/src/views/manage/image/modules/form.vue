@@ -50,7 +50,6 @@ const [Modal, modalApi] = useVbenModal({
 
         // response 已经是数据对象(被拦截器提取过),不需要 .data
         let url = doneFile?.response?.url || doneFile?.url || '';
-        let thumbnailUrl = doneFile?.response?.thumbnailUrl || '';
 
         // 确保只保存相对路径到数据库（去除域名部分）
         if (url && url.includes('://')) {
@@ -61,16 +60,6 @@ const [Modal, modalApi] = useVbenModal({
           }
         }
         data.imageUrl = url;
-
-        // 处理缩略图URL
-        if (thumbnailUrl && thumbnailUrl.includes('://')) {
-          try {
-            thumbnailUrl = new URL(thumbnailUrl).pathname;
-          } catch {
-            console.warn('解析缩略图URL失败，使用原始值:', thumbnailUrl);
-          }
-        }
-        data.thumbnailUrl = thumbnailUrl || null;
 
         // 自动填充图片宽高、文件大小和哈希值
         if (doneFile?.response) {

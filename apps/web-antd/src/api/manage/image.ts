@@ -50,7 +50,6 @@ export namespace ImageManageApi {
     title: string;
     description?: string;
     imageUrl: string;
-    thumbnailUrl?: string;
     width?: number;
     height?: number;
     aspectRatio?: string;
@@ -107,7 +106,6 @@ export async function batchImportImagesApi(data: {
     aspectRatio?: string;
     size?: number;
     originalName?: string;
-    thumbnailUrl?: string;
   }>;
 }) {
   return requestClient.post('/admin/images/batch', data);

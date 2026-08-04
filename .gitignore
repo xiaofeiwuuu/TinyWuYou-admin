@@ -51,3 +51,14 @@ vite.config.ts.*
 *.sw?
 .history
 .cursor
+
+# 凭证与密钥
+# 华为云控制台下载 AK/SK 时给的文件就叫 credentials.csv，
+# 很容易顺手丢进项目目录。2026-08-04 确实在项目根清出过一份（未提交进 git）。
+*.csv
+credentials*
+*secret*
+*.pem
+*.key
+*.p12
+*.pfx

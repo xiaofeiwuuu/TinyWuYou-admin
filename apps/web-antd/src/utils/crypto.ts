@@ -153,8 +153,14 @@ export class CryptoUtil {
    * 返回 64 位 hex 字符串
    */
   static generateAesKey(): string {
-    const randomBytes = CryptoJS.lib.WordArray.random(32);
-    return randomBytes.toString(CryptoJS.enc.Hex);
+    // 显式用浏览器原生 CSPRNG，不依赖 CryptoJS.lib.WordArray.random 的内部实现——
+    // 后者是否走 crypto.getRandomValues 取决于 CryptoJS 版本，旧版会退回 Math.random，
+    // 那样整把 AES-256 密钥就只有 Math.random 的熵。浏览器一定有 crypto.getRandomValues。
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
   }
 
   /**

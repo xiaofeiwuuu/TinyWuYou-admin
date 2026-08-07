@@ -3,7 +3,7 @@ import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
-import type { ImageTypeApi } from '#/api/manage/image-type';
+import type { BannerApi } from '#/api/manage/banner';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
@@ -13,11 +13,10 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  deleteImageTypeApi,
-  getImageTypeListApi,
-  updateImageTypeApi,
-} from '#/api/manage/image-type';
-import { loadImageTypes } from '#/constants/image-type';
+  deleteBannerApi,
+  getBannerListApi,
+  updateBannerApi,
+} from '#/api/manage/banner';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
@@ -36,14 +35,14 @@ function onCreate() {
   formModalApi.setData(null).open();
 }
 
-function onEdit(row: ImageTypeApi.ImageTypeInfo) {
+function onEdit(row: BannerApi.BannerInfo) {
   formModalApi.setData(row).open();
 }
 
-async function onDelete(row: ImageTypeApi.ImageTypeInfo) {
+async function onDelete(row: BannerApi.BannerInfo) {
   try {
-    await deleteImageTypeApi(row.id);
-    message.success(`图片类型 ${row.name} 已删除`);
+    await deleteBannerApi(row.id);
+    message.success('已删除');
     refreshGrid();
   } catch {
     message.error('删除失败');
@@ -62,32 +61,25 @@ function confirm(content: string, title: string) {
   });
 }
 
-/**
- * 列表里直接切换启用/禁用。返回 true 才让开关翻转（见 CellSwitch）。
- * 类型的启用状态被图片/分类管理页的下拉框共用，改完要 loadImageTypes(true) 刷新缓存。
- */
+/** 列表里直接切换启用/禁用，返回 true 才让开关翻转 */
 async function onStatusChange(
   newStatus: number,
-  row: ImageTypeApi.ImageTypeInfo,
+  row: BannerApi.BannerInfo,
 ): Promise<boolean> {
   try {
     await confirm(
-      `确定将图片类型「${row.name}」${newStatus === 1 ? '启用' : '禁用'}吗？`,
+      `确定${newStatus === 1 ? '启用' : '禁用'}这张轮播图吗？`,
       '切换状态',
     );
-    await updateImageTypeApi(row.id, { isEnabled: newStatus });
+    await updateBannerApi(row.id, { isEnabled: newStatus });
     message.success('状态已更新');
-    loadImageTypes(true);
     return true;
   } catch {
     return false;
   }
 }
 
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<ImageTypeApi.ImageTypeInfo>) {
+function onActionClick({ code, row }: OnActionClickParams<BannerApi.BannerInfo>) {
   switch (code) {
     case 'delete': {
       onDelete(row);
@@ -110,15 +102,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
     ),
     height: 'auto',
     keepSource: true,
-    // 类型总共就几条，不分页
+    // 轮播就几张，不分页
     pagerConfig: { enabled: false },
     stripe: true,
     proxyConfig: {
-      // 注意：关掉分页后 vxe 读的是 response.list，不再读 response.result，
-      // 两者是各自独立的配置项。配错了表格会静默显示为空。
       response: { list: 'list' },
       ajax: {
-        query: async () => await getImageTypeListApi(),
+        query: async () => await getBannerListApi(),
       },
     },
     rowConfig: { isCurrent: true, isHover: true, keyField: 'id' },
@@ -128,23 +118,20 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 function refreshGrid() {
   gridApi.query();
-  // 图片管理/分类管理页共用这份类型配置，增删改后要强制重载，
-  // 否则它们的类型下拉框会一直显示改动前的旧数据
-  loadImageTypes(true);
 }
 </script>
 
 <template>
   <Page auto-content-height>
     <FormModal @success="refreshGrid" />
-    <Grid table-title="图片类型">
+    <Grid table-title="首页轮播图">
       <template #toolbar-tools>
         <Button v-if="canCreate" type="primary" @click="onCreate">
           <Plus class="size-5" />
-          新增类型
+          新增轮播图
         </Button>
         <span class="text-muted-foreground ml-3 text-xs">
-          已被图片或分类使用的类型不能删除，可改为禁用
+          点击轮播图会跳转到所选图片分类；排序数值越大越靠前
         </span>
       </template>
     </Grid>

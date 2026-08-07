@@ -4,9 +4,12 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { CategoryManageApi } from '#/api/manage/category';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
 import {
+  getAllImageTypeOptions,
   getDefaultImageType,
   IMAGE_TYPE_OPTIONS,
 } from '#/constants/image-type';
@@ -22,7 +25,9 @@ export function getImageTypeOptions() {
   return IMAGE_TYPE_OPTIONS;
 }
 
-export function useSchema(): VbenFormSchema[] {
+export function useSchema(
+  onPreview?: (file: any) => void,
+): VbenFormSchema[] {
   return [
     // 1. 内容类型
     {
@@ -90,6 +95,20 @@ export function useSchema(): VbenFormSchema[] {
       fieldName: 'sortOrder',
       label: '排序',
     },
+    // 展示列数：小程序图片列表页每行几列
+    {
+      component: 'InputNumber',
+      componentProps: {
+        min: 1,
+        max: 6,
+        placeholder: '每行展示几列',
+        class: 'w-full',
+      },
+      defaultValue: 3,
+      fieldName: 'gridColumns',
+      label: '展示列数',
+      help: '小程序图片列表每行列数，默认 3；情侣头像 / 电脑壁纸建议 2',
+    },
     // 4. 图标上传
     {
       component: 'Upload',
@@ -100,6 +119,8 @@ export function useSchema(): VbenFormSchema[] {
         maxCount: 1,
         multiple: false,
         showUploadList: true,
+        // 点已上传图 → 弹层放大，不跳新页面（antd 默认 window.open）
+        onPreview,
         onRemove: async (file: any) => {
           // 删除服务器上的文件（后端会自动删除缩略图）
           let url = file.response?.url || file.url;
@@ -212,7 +233,8 @@ export function useColumns(
       width: 100,
       cellRender: {
         name: 'CellTag',
-        options: getImageTypeOptions(),
+        // 展示用全部类型（含禁用），否则禁用类型的分类这列标签会显示不出
+        options: getAllImageTypeOptions(),
       },
     },
     {
@@ -228,6 +250,11 @@ export function useColumns(
       sortable: true,
     },
     {
+      title: '列数',
+      field: 'gridColumns',
+      width: 80,
+    },
+    {
       title: '状态',
       field: 'status',
       width: 100,
@@ -240,10 +267,9 @@ export function useColumns(
       title: '创建时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      // 后端返回 UTC ISO（...Z），formatDateTime 用 dayjs 按本地时区
+      // 统一格式化成 YYYY-MM-DD HH:mm:ss，与轮播图一致
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       align: 'right',

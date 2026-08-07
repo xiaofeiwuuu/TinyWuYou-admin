@@ -47,7 +47,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/manage/text/index.vue'),
         meta: {
           icon: 'lucide:file-text',
-          title: $t('文字管理'),
+          title: $t('文案管理'),
+        },
+      },
+      {
+        name: 'ContentBanner',
+        path: '/content/banner',
+        component: () => import('#/views/manage/banner/index.vue'),
+        meta: {
+          icon: 'lucide:gallery-horizontal-end',
+          title: $t('首页轮播图'),
         },
       },
     ],

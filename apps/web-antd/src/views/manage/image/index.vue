@@ -22,7 +22,7 @@ import {
   getImageListApi,
   updateImageApi,
 } from '#/api/manage/image';
-import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
+import { getAllImageTypeOptions } from '#/constants/image-type';
 
 import { useColumns } from './data';
 import BatchEditForm from './modules/batch-edit-form.vue';
@@ -235,7 +235,8 @@ const formOptions: VbenFormProps = {
         allowClear: true,
         dropdownMatchSelectWidth: false,
         placeholder: '全部',
-        options: IMAGE_TYPE_OPTIONS.map((item) => ({
+        // 搜索用全部类型（含禁用）：禁用类型下可能还有存量图片，要能筛到
+        options: getAllImageTypeOptions().map((item) => ({
           label: item.label,
           value: item.value,
         })),
@@ -298,6 +299,34 @@ const formOptions: VbenFormProps = {
         ],
       },
     },
+    {
+      component: 'Select',
+      fieldName: 'isVip',
+      label: 'VIP',
+      componentProps: {
+        allowClear: true,
+        placeholder: '全部',
+        dropdownMatchSelectWidth: false,
+        options: [
+          { label: '普通', value: 0 },
+          { label: 'VIP', value: 1 },
+        ],
+      },
+    },
+    {
+      component: 'Select',
+      fieldName: 'isRecommend',
+      label: '推荐',
+      componentProps: {
+        allowClear: true,
+        placeholder: '全部',
+        dropdownMatchSelectWidth: false,
+        options: [
+          { label: '否', value: 0 },
+          { label: '是', value: 1 },
+        ],
+      },
+    },
   ],
   wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-6',
   showCollapseButton: false,
@@ -344,6 +373,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
             status:
               formValues.status !== undefined && formValues.status !== ''
                 ? Number(formValues.status)
+                : undefined,
+            // 0 是有效值（普通 / 否），不能用 || undefined，否则会被当空丢掉
+            isVip:
+              formValues.isVip !== undefined && formValues.isVip !== ''
+                ? Number(formValues.isVip)
+                : undefined,
+            isRecommend:
+              formValues.isRecommend !== undefined &&
+              formValues.isRecommend !== ''
+                ? Number(formValues.isRecommend)
                 : undefined,
             sortBy: sort?.field,
             sortOrder: sort?.order === 'desc' ? 'DESC' : 'ASC',

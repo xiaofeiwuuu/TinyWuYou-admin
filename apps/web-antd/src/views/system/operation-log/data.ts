@@ -241,10 +241,8 @@ export function useColumns(): VxeTableGridOptions<OperationLogApi.OperationLogIn
       title: '操作时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) =>
+        cellValue ? dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss') : '-',
     },
     {
       title: '请求参数',

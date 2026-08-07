@@ -4,6 +4,7 @@ import type { UserManageApi } from '#/api/manage/user';
 import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
+import { formatDateTime } from '@vben/utils';
 
 import {
   Button as AButton,
@@ -49,7 +50,7 @@ const showCurrentVip = computed(() => {
 
 const currentVipInfo = computed(() => {
   if (!userData.value?.vipExpireTime) return '';
-  return new Date(userData.value.vipExpireTime).toLocaleString('zh-CN');
+  return formatDateTime(userData.value.vipExpireTime);
 });
 
 // 快捷选择VIP时长（填充到输入框）

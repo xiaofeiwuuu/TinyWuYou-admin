@@ -9,6 +9,8 @@ export namespace ImageTypeApi {
     /** 类型标识，images / categories 里存的就是它，创建后不可改 */
     code: string;
     name: string;
+    /** 副标题/展示文案，下发给小程序做类型页的一句话介绍，选填 */
+    subtitle?: string;
     orientation: Orientation;
     color: string;
     /** 热度分权重：hot_score = 下载数 * downloadWeight + 收藏数 * collectWeight */
@@ -32,6 +34,7 @@ export namespace ImageTypeApi {
   export interface CreateParams {
     code: string;
     name: string;
+    subtitle?: string;
     orientation: Orientation;
     color?: string;
     downloadWeight?: number;
@@ -40,7 +43,9 @@ export namespace ImageTypeApi {
     isEnabled?: number;
   }
 
-  export type UpdateParams = Omit<CreateParams, 'code'>;
+  // 更新时字段全可选：既支持整表提交，也支持列表里只改单个字段（如状态开关）。
+  // 后端 UpdateImageTypeDto 本来就全可选。
+  export type UpdateParams = Partial<Omit<CreateParams, 'code'>>;
 }
 
 export async function getImageTypeListApi() {

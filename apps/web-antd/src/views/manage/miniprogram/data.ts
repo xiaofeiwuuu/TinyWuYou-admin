@@ -4,6 +4,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { MiniProgramManageApi } from '#/api/manage/miniprogram';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 import { uploadFile } from '#/api/core/upload';
 
@@ -147,10 +149,7 @@ export function useColumns(
       title: '创建时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       align: 'right',

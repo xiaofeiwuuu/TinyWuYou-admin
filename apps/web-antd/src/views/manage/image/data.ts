@@ -4,10 +4,13 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { ImageManageApi } from '#/api/manage/image';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 import { deleteUploadedFile, uploadFile } from '#/api/core/upload';
 import { getCategoryListApi } from '#/api/manage/category';
 import {
+  getAllImageTypeOptions,
   getDefaultImageType,
   IMAGE_TYPE_OPTIONS,
   type ImageType,
@@ -17,7 +20,9 @@ export function getImageTypeOptions() {
   return IMAGE_TYPE_OPTIONS;
 }
 
-export function useSchema(): VbenFormSchema[] {
+export function useSchema(
+  onPreview?: (file: any) => void,
+): VbenFormSchema[] {
   return [
     {
       component: 'Select',
@@ -101,6 +106,8 @@ export function useSchema(): VbenFormSchema[] {
         maxCount: 1,
         multiple: false,
         showUploadList: true,
+        // 点已上传图 → 弹层放大，不跳新页面（antd 默认 window.open）
+        onPreview,
         onRemove: async (file: any) => {
           let url = file.response?.url || file.url;
           if (url) {
@@ -232,7 +239,8 @@ export function useColumns(
       width: 120,
       cellRender: {
         name: 'CellTag',
-        options: getImageTypeOptions(),
+        // 展示用全部类型（含禁用），否则禁用类型的图片这列标签会显示不出
+        options: getAllImageTypeOptions(),
       },
     },
     {
@@ -278,6 +286,13 @@ export function useColumns(
       },
     },
     {
+      title: '排序',
+      field: 'sortOrder',
+      width: 90,
+      sortable: true,
+      // 数值越大越靠前；小程序列表默认按它 → 最新时间排序
+    },
+    {
       title: '状态',
       field: 'status',
       width: 100,
@@ -290,10 +305,9 @@ export function useColumns(
       title: '创建时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      // 后端返回 UTC ISO（...Z），formatDateTime 用 dayjs 按本地时区
+      // 统一格式化成 YYYY-MM-DD HH:mm:ss，与轮播图一致
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       align: 'right',

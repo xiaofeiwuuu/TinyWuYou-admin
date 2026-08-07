@@ -18,7 +18,7 @@ import {
   getCategoryListApi,
   updateCategoryApi,
 } from '#/api/manage/category';
-import { IMAGE_TYPE_OPTIONS } from '#/constants/image-type';
+import { getAllImageTypeOptions } from '#/constants/image-type';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
@@ -156,7 +156,8 @@ const formOptions: VbenFormProps = {
         dropdownMatchSelectWidth: false,
         placeholder: '全部',
         filterable: true,
-        options: IMAGE_TYPE_OPTIONS.map((item) => ({
+        // 搜索用全部类型（含禁用）：禁用类型下可能还有存量分类，要能筛到
+        options: getAllImageTypeOptions().map((item) => ({
           label: item.label,
           value: item.value,
         })),

@@ -72,6 +72,20 @@ export function useSchema(isEdit = false): VbenFormSchema[] {
       rules: z.string().min(1, '请输入类型名称').max(20, '不超过20个字符'),
     },
     {
+      component: 'Textarea',
+      componentProps: {
+        maxLength: 100,
+        rows: 2,
+        showCount: true,
+        class: 'w-full',
+        placeholder: '如：打造极致全新电脑平板桌面壁纸',
+      },
+      fieldName: 'subtitle',
+      label: '副标题',
+      help: '展示给用户的一句话文案，会下发到小程序类型页，选填',
+      rules: z.string().max(100, '副标题不能超过100个字符').optional(),
+    },
+    {
       component: 'Select',
       componentProps: {
         options: getOrientationOptions().map(({ label, value }) => ({
@@ -152,6 +166,10 @@ export function useColumns(
   onActionClick?: OnActionClickFn<ImageTypeApi.ImageTypeInfo>,
   canEdit?: boolean,
   canDelete?: boolean,
+  onStatusChange?: (
+    newStatus: number,
+    row: ImageTypeApi.ImageTypeInfo,
+  ) => Promise<boolean>,
 ): VxeTableGridOptions<ImageTypeApi.ImageTypeInfo>['columns'] {
   const operations: string[] = [];
   if (canEdit) operations.push('edit');
@@ -159,7 +177,14 @@ export function useColumns(
 
   return [
     { title: '类型标识', field: 'code', width: 140 },
-    { title: '类型名称', field: 'name', minWidth: 130 },
+    { title: '类型名称', field: 'name', minWidth: 110 },
+    {
+      title: '副标题',
+      field: 'subtitle',
+      minWidth: 180,
+      showOverflow: 'tooltip',
+      formatter: ({ cellValue }) => cellValue || '-',
+    },
     {
       title: '图片朝向',
       field: 'orientation',
@@ -189,8 +214,14 @@ export function useColumns(
     {
       title: '状态',
       field: 'isEnabled',
-      width: 90,
-      cellRender: { name: 'CellTag', options: getStatusOptions() },
+      width: 100,
+      // 有 onStatusChange（且有编辑权限）时用可点的开关，否则退回只读标签。
+      // CellSwitch 默认 checkedValue:1 / unCheckedValue:0，正好匹配 isEnabled
+      cellRender: {
+        name: onStatusChange ? 'CellSwitch' : 'CellTag',
+        options: getStatusOptions(),
+        attrs: { beforeChange: onStatusChange },
+      },
     },
     {
       align: 'center',

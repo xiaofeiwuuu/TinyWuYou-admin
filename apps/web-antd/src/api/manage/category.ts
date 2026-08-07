@@ -23,6 +23,7 @@ export namespace CategoryManageApi {
     contentType: 'image' | 'text';
     imageType?: ImageType;
     sortOrder: number;
+    gridColumns: number;
     status: number;
     createdAt: string;
   }
@@ -43,6 +44,7 @@ export namespace CategoryManageApi {
     contentType?: 'image' | 'text';
     imageType?: ImageType;
     sortOrder?: number;
+    gridColumns?: number;
     status?: number;
   }
 }

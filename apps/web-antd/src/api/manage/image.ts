@@ -11,6 +11,8 @@ export namespace ImageManageApi {
     imageType?: ImageType;
     keyword?: string;
     status?: number;
+    isVip?: number;
+    isRecommend?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
   }

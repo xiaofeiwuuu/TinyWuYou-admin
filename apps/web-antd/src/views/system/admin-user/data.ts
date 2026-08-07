@@ -4,6 +4,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { AdminUserApi } from '#/api/system/admin-user';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 
 export function getRoleOptions() {
@@ -144,10 +146,7 @@ export function useColumns(
       title: '最后登录时间',
       field: 'lastLoginTime',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       title: '最后登录IP',
@@ -168,10 +167,7 @@ export function useColumns(
       title: '创建时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       align: 'right',

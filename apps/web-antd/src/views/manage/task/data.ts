@@ -4,6 +4,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { TaskManageApi } from '#/api/manage/task';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 
 export function getTaskTypeOptions() {
@@ -215,10 +217,7 @@ export function useColumns(
       title: '创建时间',
       field: 'createdAt',
       minWidth: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       align: 'center',

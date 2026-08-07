@@ -6,6 +6,8 @@ import type { VipManageApi } from '#/api/manage/vip';
 
 import { h } from 'vue';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 import { copyWithTip } from '#/utils/clipboard';
 
@@ -148,26 +150,18 @@ export function useColumns(
       title: '使用时间',
       field: 'usedTime',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       title: '卡密有效期',
       field: 'expireAt',
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '永久';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) =>
+        cellValue ? formatDateTime(cellValue) : '永久',
     },
     {
       title: '创建时间',
       field: 'createdAt',
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       title: '批次号',

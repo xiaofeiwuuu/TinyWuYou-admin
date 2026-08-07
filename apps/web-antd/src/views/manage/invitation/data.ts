@@ -2,6 +2,8 @@ import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
 
 import type { InvitationManageApi } from '#/api/manage/invitation';
 
+import { formatDateTime } from '@vben/utils';
+
 export function useColumns(): VxeTableGridOptions<InvitationManageApi.InvitationInfo>['columns'] {
   return [
     { title: '序号', type: 'seq', width: 50 },
@@ -34,10 +36,7 @@ export function useColumns(): VxeTableGridOptions<InvitationManageApi.Invitation
       title: '邀请时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
   ];
 }

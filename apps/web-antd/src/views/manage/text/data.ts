@@ -4,6 +4,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { TextManageApi } from '#/api/manage/text';
 
+import { formatDateTime } from '@vben/utils';
+
 import { z } from '#/adapter/form';
 import { getCategoryListApi } from '#/api/manage/category';
 
@@ -114,10 +116,9 @@ export function useColumns(
       title: '创建时间',
       field: 'createdAt',
       width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        return new Date(cellValue).toLocaleString('zh-CN');
-      },
+      // 后端返回 UTC ISO（...Z），formatDateTime 用 dayjs 按本地时区
+      // 统一格式化成 YYYY-MM-DD HH:mm:ss，与其它页面一致
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '-'),
     },
     {
       align: 'center',

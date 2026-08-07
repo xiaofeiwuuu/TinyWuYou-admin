@@ -4,6 +4,8 @@ import type { UserVipApi } from '#/api/manage/user-vip';
 
 import { h } from 'vue';
 
+import { formatDateTime } from '@vben/utils';
+
 import { copyWithTip } from '#/utils/clipboard';
 
 /** 开通方式的展示配置 */
@@ -16,7 +18,7 @@ export function getSourceTypeOptions() {
 }
 
 function formatTime(value: null | string) {
-  return value ? new Date(value).toLocaleString('zh-CN') : '-';
+  return value ? formatDateTime(value) : '-';
 }
 
 export function useColumns(): VxeTableGridOptions<UserVipApi.UserVipRecord>['columns'] {

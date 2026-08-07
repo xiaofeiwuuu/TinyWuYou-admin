@@ -29,8 +29,11 @@ export interface ImageTypeOption {
  * 用 reactive + 函数形式的 componentProps（跑在 computed 里），改动才能自动传播。
  */
 
-/** 下拉框选项。首次 loadImageTypes() 之前是空数组 */
+/** 下拉框选项（仅启用）。首次 loadImageTypes() 之前是空数组。用于表单选择 */
 export const IMAGE_TYPE_OPTIONS: ImageTypeOption[] = reactive([]);
+
+/** 全部图片类型选项（含禁用）。搜索筛选、列表标签展示用——禁用类型下可能仍有存量数据 */
+export const IMAGE_TYPE_OPTIONS_ALL: ImageTypeOption[] = reactive([]);
 
 /** 标签映射（表格展示用） */
 export const IMAGE_TYPE_LABELS: Record<string, string> = reactive({});
@@ -69,25 +72,31 @@ export async function loadImageTypes(force = false): Promise<void> {
 
     // 原地清空再填充，保证已经引用了这些数组/对象的地方能拿到新值
     IMAGE_TYPE_OPTIONS.length = 0;
+    IMAGE_TYPE_OPTIONS_ALL.length = 0;
     Object.keys(IMAGE_TYPE_LABELS).forEach((k) => delete IMAGE_TYPE_LABELS[k]);
     Object.keys(IMAGE_TYPE_COLORS).forEach((k) => delete IMAGE_TYPE_COLORS[k]);
     Object.keys(IMAGE_TYPE_ORIENTATIONS).forEach(
       (k) => delete IMAGE_TYPE_ORIENTATIONS[k],
     );
 
-    list
-      .filter((item) => item.isEnabled === 1)
-      .forEach((item) => {
-        IMAGE_TYPE_OPTIONS.push({
-          label: item.name,
-          value: item.code,
-          color: item.color,
-          orientation: item.orientation,
-        });
-        IMAGE_TYPE_LABELS[item.code] = item.name;
-        IMAGE_TYPE_COLORS[item.code] = item.color;
-        IMAGE_TYPE_ORIENTATIONS[item.code] = item.orientation;
-      });
+    list.forEach((item) => {
+      const opt = {
+        label: item.name,
+        value: item.code,
+        color: item.color,
+        orientation: item.orientation,
+      };
+      // 全部类型（含禁用）：搜索筛选、列表标签展示
+      IMAGE_TYPE_OPTIONS_ALL.push(opt);
+      // label/color/orientation 用全部，保证禁用类型的存量数据也能正确显示名称/颜色/布局
+      IMAGE_TYPE_LABELS[item.code] = item.name;
+      IMAGE_TYPE_COLORS[item.code] = item.color;
+      IMAGE_TYPE_ORIENTATIONS[item.code] = item.orientation;
+      // 仅启用类型进入表单可选项（新数据不该归到禁用类型）
+      if (item.isEnabled === 1) {
+        IMAGE_TYPE_OPTIONS.push(opt);
+      }
+    });
 
     loaded = true;
   })();
@@ -100,6 +109,11 @@ export async function loadImageTypes(force = false): Promise<void> {
  */
 export function getImageTypeOptions() {
   return IMAGE_TYPE_OPTIONS;
+}
+
+/** 全部类型选项（含禁用）：搜索筛选、列表标签展示用 */
+export function getAllImageTypeOptions() {
+  return IMAGE_TYPE_OPTIONS_ALL;
 }
 
 /**

@@ -3,6 +3,8 @@ import type { OpsStatusApi } from '#/api/manage/ops-status';
 
 import { computed, onMounted, ref } from 'vue';
 
+import { formatDateTime } from '@vben/utils';
+
 import { Alert, Card, Descriptions, DescriptionsItem, Tag } from 'ant-design-vue';
 
 import { getOpsStatusApi } from '#/api/manage/ops-status';
@@ -87,7 +89,7 @@ async function load() {
 
 function fmt(iso?: null | string) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('zh-CN', { hour12: false });
+  return formatDateTime(iso);
 }
 
 onMounted(load);

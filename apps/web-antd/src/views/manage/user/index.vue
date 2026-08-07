@@ -7,6 +7,7 @@ import { h, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page, prompt } from '@vben/common-ui';
+import { formatDateTime } from '@vben/utils';
 
 import {
   Dropdown,
@@ -103,7 +104,7 @@ const getLevelColor = (level: number) => {
 
 const formatDate = (date: string) => {
   if (!date) return '-';
-  return new Date(date).toLocaleString('zh-CN');
+  return formatDateTime(date);
 };
 
 /**

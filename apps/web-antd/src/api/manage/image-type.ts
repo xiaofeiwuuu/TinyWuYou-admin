@@ -18,6 +18,8 @@ export namespace ImageTypeApi {
     collectWeight: number;
     sortOrder: number;
     isEnabled: number;
+    /** 该类型下的分类是否在小程序「分类」页展示 */
+    showInCategory: number;
     createdAt: string;
     /** 该类型下的图片数（用于判断能否删除） */
     imageCount: number;
@@ -41,6 +43,7 @@ export namespace ImageTypeApi {
     collectWeight?: number;
     sortOrder?: number;
     isEnabled?: number;
+    showInCategory?: number;
   }
 
   // 更新时字段全可选：既支持整表提交，也支持列表里只改单个字段（如状态开关）。

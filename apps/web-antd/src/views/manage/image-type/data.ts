@@ -159,6 +159,20 @@ export function useSchema(isEdit = false): VbenFormSchema[] {
       help: '禁用后新建图片和分类不能再选这个类型，已有数据不受影响',
       defaultValue: 1,
     },
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        options: [
+          { label: '展示', value: 1 },
+          { label: '不展示', value: 0 },
+        ],
+        optionType: 'button',
+      },
+      fieldName: 'showInCategory',
+      label: '分类页展示',
+      help: '开启后，该类型下的分类会显示在小程序「分类」页（如"专辑"）',
+      defaultValue: 0,
+    },
   ];
 }
 
@@ -221,6 +235,18 @@ export function useColumns(
         name: onStatusChange ? 'CellSwitch' : 'CellTag',
         options: getStatusOptions(),
         attrs: { beforeChange: onStatusChange },
+      },
+    },
+    {
+      title: '分类页展示',
+      field: 'showInCategory',
+      width: 110,
+      cellRender: {
+        name: 'CellTag',
+        options: [
+          { color: 'green', label: '展示', value: 1 },
+          { color: 'default', label: '不展示', value: 0 },
+        ],
       },
     },
     {

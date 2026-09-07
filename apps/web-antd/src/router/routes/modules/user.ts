@@ -41,6 +41,15 @@ const routes: RouteRecordRaw[] = [
           title: $t('邀请记录'),
         },
       },
+      {
+        name: 'UserPurchaseRecord',
+        path: '/user/purchase-record',
+        component: () => import('#/views/manage/virtualpay-order/index.vue'),
+        meta: {
+          icon: 'lucide:receipt',
+          title: $t('购买记录'),
+        },
+      },
       // {
       //   name: 'UserCollection',
       //   path: '/user/collection',

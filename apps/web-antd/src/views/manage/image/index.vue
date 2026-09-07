@@ -220,10 +220,10 @@ const formOptions: VbenFormProps = {
     },
     {
       component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索',
+      fieldName: 'title',
+      label: '标题',
       componentProps: {
-        placeholder: '标题',
+        placeholder: '按图片标题搜索',
       },
     },
     {
@@ -365,7 +365,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
             page: page.currentPage,
             pageSize: page.pageSize,
             id: formValues.id ? Number(formValues.id) : undefined,
-            keyword: formValues.keyword || undefined,
+            title: formValues.title || undefined,
             imageType: formValues.imageType || undefined,
             categoryId: formValues.categoryId
               ? Number(formValues.categoryId)

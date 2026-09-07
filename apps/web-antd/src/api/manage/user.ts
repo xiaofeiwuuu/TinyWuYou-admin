@@ -10,7 +10,6 @@ export namespace UserManageApi {
     /** 对外用户标识（8位数字，精确匹配） */
     uid?: string;
     nickname?: string;
-    keyword?: string;
     isVip?: number;
     /** 账号状态：1 正常 / 0 禁用 */
     status?: number;

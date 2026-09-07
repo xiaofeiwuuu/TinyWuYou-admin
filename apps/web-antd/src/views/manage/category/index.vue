@@ -126,10 +126,10 @@ const formOptions: VbenFormProps = {
   schema: [
     {
       component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索',
+      fieldName: 'name',
+      label: '分类名称',
       componentProps: {
-        placeholder: '分类名称',
+        placeholder: '按分类名称搜索',
       },
     },
     {
@@ -214,7 +214,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return await getCategoryListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
-            keyword: formValues.keyword || undefined,
+            name: formValues.name || undefined,
             contentType: formValues.contentType || undefined,
             imageType: formValues.imageType || undefined,
             status:

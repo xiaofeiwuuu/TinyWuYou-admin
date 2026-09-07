@@ -6,7 +6,8 @@ export namespace TextManageApi {
     page?: number;
     pageSize?: number;
     categoryId?: number;
-    keyword?: string;
+    /** 按文案内容模糊搜索 */
+    content?: string;
     status?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';

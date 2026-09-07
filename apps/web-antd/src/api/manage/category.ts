@@ -8,7 +8,8 @@ export namespace CategoryManageApi {
     pageSize?: number;
     contentType?: 'image' | 'text';
     imageType?: ImageType;
-    keyword?: string;
+    /** 按分类名称模糊搜索 */
+    name?: string;
     status?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';

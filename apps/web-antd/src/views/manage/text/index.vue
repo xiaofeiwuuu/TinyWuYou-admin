@@ -201,10 +201,10 @@ const formOptions: VbenFormProps = {
   schema: [
     {
       component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索',
+      fieldName: 'content',
+      label: '文案内容',
       componentProps: {
-        placeholder: '文案内容',
+        placeholder: '按文案内容搜索',
       },
     },
     {
@@ -262,7 +262,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return await getTextListApi({
             page: page.currentPage,
             pageSize: page.pageSize,
-            keyword: formValues.keyword || undefined,
+            content: formValues.content || undefined,
             categoryId: formValues.categoryId
               ? Number(formValues.categoryId)
               : undefined,

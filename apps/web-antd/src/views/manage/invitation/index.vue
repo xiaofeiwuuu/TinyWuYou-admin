@@ -19,7 +19,7 @@ function handleUidClick(uid: string) {
   userInfoRef.value?.open(uid);
 }
 
-// 邀请者 / 被邀请者：各一个远程搜索下拉（可按昵称或 UID 联想，选中回传完整 UID）
+// 邀请者 / 被邀请者：各一个远程搜索下拉（按用户名联想，选中回传其 UID）
 const inviterOptions = ref<{ label: string; value: string }[]>([]);
 const inviteeOptions = ref<{ label: string; value: string }[]>([]);
 let inviterTimer: any;
@@ -40,8 +40,8 @@ function makeSearch(
     setTimer(
       setTimeout(async () => {
         try {
-          // keyword 后端会同时匹配昵称/UID/openid/邀请码，输入哪个都能联想
-          const res = await getUserListApi({ keyword: key, page: 1, pageSize: 20 });
+          // 按用户名（昵称）远程联想，选中后回传其 uid 做过滤
+          const res = await getUserListApi({ nickname: key, page: 1, pageSize: 20 });
           target.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
             label: `${u.nickname || '(无昵称)'} · ${u.uid}`,
             value: u.uid,
@@ -78,7 +78,7 @@ const formOptions: VbenFormProps = {
         notFoundContent: null,
         onSearch: handleInviterSearch,
         options: inviterOptions.value,
-        placeholder: '输入昵称/UID 远程搜索',
+        placeholder: '输入用户名远程搜索',
         showSearch: true,
       }),
     },
@@ -92,7 +92,7 @@ const formOptions: VbenFormProps = {
         notFoundContent: null,
         onSearch: handleInviteeSearch,
         options: inviteeOptions.value,
-        placeholder: '输入昵称/UID 远程搜索',
+        placeholder: '输入用户名远程搜索',
         showSearch: true,
       }),
     },

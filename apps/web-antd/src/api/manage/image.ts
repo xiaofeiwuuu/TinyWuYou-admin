@@ -9,7 +9,8 @@ export namespace ImageManageApi {
     id?: number;
     categoryId?: number;
     imageType?: ImageType;
-    keyword?: string;
+    /** 按图片标题模糊搜索 */
+    title?: string;
     status?: number;
     isVip?: number;
     isRecommend?: number;

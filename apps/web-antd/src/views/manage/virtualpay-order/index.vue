@@ -3,7 +3,7 @@ import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { VirtualPayApi } from '#/api/manage/virtualpay';
 
-import { h } from 'vue';
+import { h, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { formatDateTime } from '@vben/utils';
@@ -11,10 +11,64 @@ import { formatDateTime } from '@vben/utils';
 import { Modal, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { getUserListApi, type UserManageApi } from '#/api/manage/user';
 import {
   getVirtualOrderListApi,
   refundVirtualOrderApi,
 } from '#/api/manage/virtualpay';
+import UserInfoModal from '#/views/manage/user/modules/user-info.vue';
+
+// UID 列点击弹出的用户信息弹窗
+const userInfoRef = ref<InstanceType<typeof UserInfoModal>>();
+function handleUidClick(uid: string) {
+  if (uid) userInfoRef.value?.open(uid);
+}
+
+// 两个独立远程搜索：用户名按 nickname 联想、UID 按 uid 联想
+const nameOptions = ref<{ label: string; value: string }[]>([]);
+const uidOptions = ref<{ label: string; value: string }[]>([]);
+let nameTimer: any;
+let uidTimer: any;
+
+const handleNameSearch = (kw: string) => {
+  clearTimeout(nameTimer);
+  const key = (kw || '').trim();
+  if (!key) {
+    nameOptions.value = [];
+    return;
+  }
+  nameTimer = setTimeout(async () => {
+    try {
+      const res = await getUserListApi({ nickname: key, page: 1, pageSize: 20 });
+      nameOptions.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
+        label: `${u.nickname || '(无昵称)'} · ${u.uid}`,
+        value: u.nickname || '',
+      }));
+    } catch {
+      nameOptions.value = [];
+    }
+  }, 300);
+};
+
+const handleUidSearch = (kw: string) => {
+  clearTimeout(uidTimer);
+  const key = (kw || '').trim();
+  if (!key) {
+    uidOptions.value = [];
+    return;
+  }
+  uidTimer = setTimeout(async () => {
+    try {
+      const res = await getUserListApi({ uid: key, page: 1, pageSize: 20 });
+      uidOptions.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
+        label: `${u.uid} · ${u.nickname || '(无昵称)'}`,
+        value: u.uid,
+      }));
+    } catch {
+      uidOptions.value = [];
+    }
+  }, 300);
+};
 
 const statusText: Record<string, string> = {
   pending: '待支付',
@@ -45,19 +99,35 @@ function handleRefund(row: VirtualPayApi.OrderInfo) {
 
 const formOptions: VbenFormProps = {
   collapsed: false,
-  wrapperClass: 'grid-cols-2 md:grid-cols-3',
+  wrapperClass: 'grid-cols-2 md:grid-cols-5',
   schema: [
     {
-      component: 'Input',
-      fieldName: 'uid',
-      label: '会员UID',
-      componentProps: { placeholder: '精确匹配 UID' },
+      component: 'Select',
+      fieldName: 'nickname',
+      label: '用户名',
+      componentProps: () => ({
+        allowClear: true,
+        filterOption: false,
+        notFoundContent: null,
+        onSearch: handleNameSearch,
+        options: nameOptions.value,
+        placeholder: '输入用户名远程搜索',
+        showSearch: true,
+      }),
     },
     {
-      component: 'Input',
-      fieldName: 'keyword',
-      label: '搜索会员',
-      componentProps: { placeholder: '昵称 / UID 模糊搜索' },
+      component: 'Select',
+      fieldName: 'uid',
+      label: 'UID',
+      componentProps: () => ({
+        allowClear: true,
+        filterOption: false,
+        notFoundContent: null,
+        onSearch: handleUidSearch,
+        options: uidOptions.value,
+        placeholder: '输入 UID 远程搜索',
+        showSearch: true,
+      }),
     },
   ],
   showCollapseButton: false,
@@ -69,7 +139,25 @@ const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
     columns: [
-      { title: 'UID', field: 'uid', width: 110 },
+      {
+        title: 'UID',
+        field: 'uid',
+        width: 110,
+        slots: {
+          default: ({ row }: { row: VirtualPayApi.OrderInfo }) =>
+            row.uid
+              ? h(
+                  'span',
+                  {
+                    class: 'cursor-pointer font-mono text-blue-600 hover:underline',
+                    title: '点击查看用户信息',
+                    onClick: () => handleUidClick(row.uid),
+                  },
+                  row.uid,
+                )
+              : h('span', { style: { color: '#999' } }, '—'),
+        },
+      },
       { title: '昵称', field: 'nickname', minWidth: 120 },
       { title: '订单号', field: 'outTradeNo', minWidth: 180 },
       {
@@ -140,7 +228,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         query: async ({ page }, formValues) => {
           return await getVirtualOrderListApi({
             uid: formValues.uid ? String(formValues.uid).trim() : undefined,
-            keyword: formValues.keyword || undefined,
+            nickname: formValues.nickname || undefined,
             page: page.currentPage,
             pageSize: page.pageSize,
           });
@@ -156,5 +244,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <Grid table-title="购买记录" />
+    <UserInfoModal ref="userInfoRef" />
   </Page>
 </template>

@@ -92,10 +92,10 @@ export namespace VirtualPayApi {
   }
 }
 
-/** 购买订单列表（独立页，可按会员 uid / keyword 搜索） */
+/** 购买订单列表（独立页，按用户名 / UID 两个独立远程搜索） */
 export async function getVirtualOrderListApi(params: {
   uid?: string;
-  keyword?: string;
+  nickname?: string;
   page?: number;
   pageSize?: number;
 }) {

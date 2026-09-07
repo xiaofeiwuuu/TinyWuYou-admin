@@ -29,6 +29,7 @@ import {
 } from '#/api/manage/user';
 import { copyWithTip } from '#/utils/clipboard';
 
+import UserInfoModal from './modules/user-info.vue';
 import VipForm from './modules/vip-form.vue';
 
 const { TextArea } = Input;
@@ -40,6 +41,12 @@ const canEdit = hasAccessByCodes(['user:edit']);
 // VIP管理表单组件引用
 const vipGrantFormRef = ref<InstanceType<typeof VipForm>>();
 const vipRenewFormRef = ref<InstanceType<typeof VipForm>>();
+
+// UID 点击弹出的用户详情弹窗
+const userInfoRef = ref<InstanceType<typeof UserInfoModal>>();
+function handleUidClick(uid: string) {
+  if (uid) userInfoRef.value?.open(uid);
+}
 
 // 两个独立的远程搜索：UID 按 uid 联想、用户名按 nickname 联想（各查各的字段）
 const uidOptions = ref<{ label: string; value: string }[]>([]);
@@ -212,17 +219,19 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       field: 'uid',
       width: 110,
       slots: {
-        // 客服场景常要把 uid 复制出去核对，点一下就复制
+        // 点击 UID 弹出用户详情（弹窗内 UID 可复制）
         default: ({ row }) =>
-          h(
-            'span',
-            {
-              class: 'cursor-pointer select-all font-mono hover:underline',
-              title: '点击复制 UID',
-              onClick: () => copyWithTip(row.uid, `已复制 ${row.uid}`),
-            },
-            row.uid ?? '-',
-          ),
+          row.uid
+            ? h(
+                'span',
+                {
+                  class: 'cursor-pointer font-mono text-blue-600 hover:underline',
+                  title: '点击查看用户详情',
+                  onClick: () => handleUidClick(row.uid),
+                },
+                row.uid,
+              )
+            : h('span', { class: 'text-muted-foreground' }, '-'),
       },
     },
     // { title: '序号', type: 'seq', width: 50 },
@@ -600,5 +609,6 @@ const refreshGrid = () => {
     <!-- VIP管理表单 -->
     <VipForm ref="vipGrantFormRef" action-type="grant" @success="refreshGrid" />
     <VipForm ref="vipRenewFormRef" action-type="renew" @success="refreshGrid" />
+    <UserInfoModal ref="userInfoRef" />
   </Page>
 </template>

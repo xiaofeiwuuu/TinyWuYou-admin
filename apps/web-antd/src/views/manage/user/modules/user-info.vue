@@ -122,9 +122,6 @@ defineExpose({ open });
         <ADescriptionsItem label="累计收藏">
           {{ user.totalCollections }}
         </ADescriptionsItem>
-        <ADescriptionsItem label="平台">
-          {{ user.platform || '-' }}
-        </ADescriptionsItem>
         <ADescriptionsItem label="注册时间">
           {{ fmt(user.createdAt) }}
         </ADescriptionsItem>

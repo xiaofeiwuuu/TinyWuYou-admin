@@ -251,53 +251,32 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
     { title: '昵称', field: 'nickname', minWidth: 120 },
     { title: 'OpenID', field: 'openid', minWidth: 200, showOverflow: true },
     {
-      title: '注册平台',
-      field: 'platform',
-      width: 110,
+      title: '邀请码',
+      field: 'inviteCode',
+      width: 100,
       slots: {
-        default: ({ row }) => {
-          const platformMap: Record<
-            string,
-            { color: string; icon: string; name: string }
-          > = {
-            // 目前只支持微信（其它平台的小程序都要求企业主体才能发布）。
-            // 保留下面的兜底分支：历史数据里若有别的 platform 值，
-            // 直接显示原始值，而不是显示成空白让人以为数据坏了。
-            weixin: { name: '微信', color: '#07c160', icon: '🟢' },
-          };
-          const platform = platformMap[row.platform] || {
-            name: row.platform,
-            color: '#999',
-            icon: '📱',
-          };
-          return h(
+        default: ({ row }) =>
+          h(
             'span',
             {
-              style: { color: platform.color, fontWeight: 500 },
+              class: 'cursor-pointer select-all font-mono hover:underline',
+              title: '点击复制邀请码',
+              onClick: () =>
+                copyWithTip(row.inviteCode, `已复制 ${row.inviteCode}`),
             },
-            `${platform.name}`,
-          );
-        },
+            row.inviteCode ?? '-',
+          ),
       },
     },
     {
       title: 'VIP状态',
       field: 'isVip',
-      width: 200,
+      width: 100,
       slots: {
-        default: ({ row }) => {
-          if (row.isVip === 1) {
-            const expireText = row.vipExpireTime
-              ? ` (${formatDate(row.vipExpireTime)}到期)`
-              : '';
-            return h(
-              'span',
-              { class: 'ant-tag ant-tag-gold' },
-              `VIP${expireText}`,
-            );
-          }
-          return h('span', { class: 'ant-tag' }, '普通');
-        },
+        default: ({ row }) =>
+          row.isVip === 1
+            ? h('span', { class: 'ant-tag ant-tag-gold' }, 'VIP')
+            : h('span', { class: 'ant-tag' }, '普通'),
       },
     },
     {
@@ -342,24 +321,6 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       width: 140,
       showOverflow: true,
       formatter: ({ cellValue }) => cellValue || '—',
-    },
-    {
-      title: '邀请码',
-      field: 'inviteCode',
-      width: 100,
-      slots: {
-        default: ({ row }) =>
-          h(
-            'span',
-            {
-              class: 'cursor-pointer select-all font-mono hover:underline',
-              title: '点击复制邀请码',
-              onClick: () =>
-                copyWithTip(row.inviteCode, `已复制 ${row.inviteCode}`),
-            },
-            row.inviteCode ?? '-',
-          ),
-      },
     },
     {
       title: '操作',

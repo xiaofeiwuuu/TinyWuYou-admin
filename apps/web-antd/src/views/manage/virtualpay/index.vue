@@ -8,10 +8,14 @@ import type { VirtualPayApi } from '#/api/manage/virtualpay';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
-import { Button, message } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteVirtualPayApi, getVirtualPayListApi } from '#/api/manage/virtualpay';
+import {
+  deleteVirtualPayApi,
+  getVirtualPayListApi,
+  updateVirtualPayApi,
+} from '#/api/manage/virtualpay';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
@@ -38,6 +42,30 @@ async function onDelete(row: VirtualPayApi.ProductInfo) {
   } catch {
     message.error('删除失败');
   }
+}
+
+// 状态开关：切换前弹确认，调更新接口只改 isEnabled；返回 true 才真正切换
+function onStatusChange(
+  newStatus: number,
+  row: VirtualPayApi.ProductInfo,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    Modal.confirm({
+      title: '切换状态',
+      content: `确定将商品「${row.name}」${newStatus === 1 ? '上架' : '下架'}吗？`,
+      onCancel: () => resolve(false),
+      onOk: async () => {
+        try {
+          await updateVirtualPayApi(row.id, { isEnabled: newStatus });
+          message.success(newStatus === 1 ? '已上架' : '已下架');
+          resolve(true);
+        } catch (error: any) {
+          message.error(error?.message || '操作失败');
+          resolve(false);
+        }
+      },
+    });
+  });
 }
 
 function onActionClick({ code, row }: OnActionClickParams<VirtualPayApi.ProductInfo>) {
@@ -84,7 +112,7 @@ const formOptions: VbenFormProps = {
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
-    columns: useColumns(onActionClick),
+    columns: useColumns(onActionClick, onStatusChange),
     height: 'auto',
     keepSource: true,
     pagerConfig: { enabled: true },

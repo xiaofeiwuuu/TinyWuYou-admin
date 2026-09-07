@@ -101,6 +101,10 @@ export function useSchema(): VbenFormSchema[] {
 /** 表格列 */
 export function useColumns(
   onActionClick?: OnActionClickFn<VirtualPayApi.ProductInfo>,
+  onStatusChange?: (
+    newStatus: number,
+    row: VirtualPayApi.ProductInfo,
+  ) => Promise<boolean> | boolean,
 ): VxeTableGridOptions<VirtualPayApi.ProductInfo>['columns'] {
   return [
     { title: '商品ID', field: 'productId', minWidth: 140 },
@@ -123,7 +127,10 @@ export function useColumns(
       title: '状态',
       field: 'isEnabled',
       width: 100,
-      cellRender: { name: 'CellTag', options: getStatusOptions() },
+      // 有改状态回调时用开关，否则退回只读标签
+      cellRender: onStatusChange
+        ? { name: 'CellSwitch', attrs: { beforeChange: onStatusChange } }
+        : { name: 'CellTag', options: getStatusOptions() },
     },
     {
       title: '创建时间',

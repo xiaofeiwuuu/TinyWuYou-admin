@@ -11,7 +11,7 @@ import { getUserListApi, type UserManageApi } from '#/api/manage/user';
 import { getUserVipListApi } from '#/api/manage/user-vip';
 
 import { getSourceTypeOptions, useColumns } from './data';
-import UserInfoModal from './modules/user-info.vue';
+import UserInfoModal from '#/views/manage/user/modules/user-info.vue';
 
 // UID 列点击弹出的用户信息弹窗
 const userInfoRef = ref<InstanceType<typeof UserInfoModal>>();

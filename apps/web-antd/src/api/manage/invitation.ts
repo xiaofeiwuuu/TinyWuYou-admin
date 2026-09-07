@@ -5,8 +5,10 @@ export namespace InvitationManageApi {
   export interface ListParams {
     page?: number;
     pageSize?: number;
-    inviterKeyword?: string;
-    inviteeKeyword?: string;
+    /** 邀请人 UID（远程搜索） */
+    inviterUid?: string;
+    /** 被邀请人 UID（远程搜索） */
+    inviteeUid?: string;
   }
 
   /** 邀请记录信息 */
@@ -14,8 +16,11 @@ export namespace InvitationManageApi {
     id: number;
     inviterId: number;
     inviteeId: number;
+    /** 对外 UID */
+    inviterUid: null | string;
     inviterNickname: string;
     inviterAvatar: string;
+    inviteeUid: null | string;
     inviteeNickname: string;
     inviteeAvatar: string;
     rewardCount: number;

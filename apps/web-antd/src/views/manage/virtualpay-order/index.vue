@@ -8,7 +8,7 @@ import { h, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { formatDateTime } from '@vben/utils';
 
-import { Modal, message } from 'ant-design-vue';
+import { Modal, message, Tag } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getUserListApi, type UserManageApi } from '#/api/manage/user';
@@ -76,6 +76,15 @@ const statusText: Record<string, string> = {
   delivered: '已发货',
   failed: '失败',
   refunded: '已退款',
+};
+
+// 各状态对应的 tag 颜色
+const statusColor: Record<string, string> = {
+  pending: 'orange',
+  paid: 'blue',
+  delivered: 'green',
+  failed: 'red',
+  refunded: 'default',
 };
 
 // 主动退款（仅已发货订单）
@@ -164,7 +173,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
         title: '类型',
         field: 'productType',
         width: 100,
-        formatter: ({ cellValue }) => (cellValue === 'vip' ? 'VIP会员' : '下载次数'),
+        slots: {
+          default: ({ row }: { row: VirtualPayApi.OrderInfo }) =>
+            row.productType === 'vip'
+              ? h(Tag, { color: 'gold' }, { default: () => 'VIP会员' })
+              : h(Tag, { color: 'blue' }, { default: () => '下载次数' }),
+        },
       },
       { title: '商品ID', field: 'productId', width: 110 },
       { title: '数量', field: 'amount', width: 80 },
@@ -178,7 +192,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
         title: '状态',
         field: 'status',
         width: 90,
-        formatter: ({ cellValue }) => statusText[cellValue] ?? cellValue,
+        slots: {
+          default: ({ row }: { row: VirtualPayApi.OrderInfo }) =>
+            h(
+              Tag,
+              { color: statusColor[row.status] ?? 'default' },
+              { default: () => statusText[row.status] ?? row.status },
+            ),
+        },
       },
       {
         title: '平台单号',

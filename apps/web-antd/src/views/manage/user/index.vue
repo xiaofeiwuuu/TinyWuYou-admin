@@ -135,6 +135,20 @@ const formOptions: VbenFormProps = {
         ],
       },
     },
+    {
+      component: 'Select',
+      fieldName: 'status',
+      label: '用户状态',
+      componentProps: {
+        allowClear: true,
+        dropdownMatchSelectWidth: false,
+        placeholder: '全部',
+        options: [
+          { label: '正常', value: 1 },
+          { label: '已禁用', value: 0 },
+        ],
+      },
+    },
   ],
   showCollapseButton: false,
   submitOnChange: false,
@@ -359,26 +373,16 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       fixed: 'right',
       slots: {
         default: ({ row }) => {
-          // VIP下拉菜单
-          const vipMenu = h(
-            Menu,
-            {},
-            {
-              default: () => [
+          // 按当前是否 VIP 决定菜单项：
+          //   VIP  → 续期VIP / 取消VIP
+          //   非VIP → 开通VIP
+          // 判断口径与「VIP状态」列一致（row.isVip === 1）
+          const isVip = row.isVip === 1;
+          const vipMenuItems = isVip
+            ? [
                 h(
                   MenuItem,
-                  {
-                    key: 'grant',
-                    onClick: () => handleVipGrant(row),
-                  },
-                  { default: () => '新增VIP' },
-                ),
-                h(
-                  MenuItem,
-                  {
-                    key: 'renew',
-                    onClick: () => handleVipRenew(row),
-                  },
+                  { key: 'renew', onClick: () => handleVipRenew(row) },
                   { default: () => '续期VIP' },
                 ),
                 h(
@@ -390,9 +394,15 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
                   },
                   { default: () => '取消VIP' },
                 ),
-              ],
-            },
-          );
+              ]
+            : [
+                h(
+                  MenuItem,
+                  { key: 'grant', onClick: () => handleVipGrant(row) },
+                  { default: () => '开通VIP' },
+                ),
+              ];
+          const vipMenu = h(Menu, {}, { default: () => vipMenuItems });
 
           if (!canEdit) {
             return h('span', { style: { color: '#999' } }, '-');
@@ -468,6 +478,10 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
           isVip:
             formValues.isVip !== undefined && formValues.isVip !== ''
               ? Number(formValues.isVip)
+              : undefined,
+          status:
+            formValues.status !== undefined && formValues.status !== ''
+              ? Number(formValues.status)
               : undefined,
         });
       },

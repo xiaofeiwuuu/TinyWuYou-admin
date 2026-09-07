@@ -12,6 +12,8 @@ export namespace UserManageApi {
     nickname?: string;
     keyword?: string;
     isVip?: number;
+    /** 账号状态：1 正常 / 0 禁用 */
+    status?: number;
   }
 
   /** 用户信息 */

@@ -21,7 +21,9 @@ function formatTime(value: null | string) {
   return value ? formatDateTime(value) : '-';
 }
 
-export function useColumns(): VxeTableGridOptions<UserVipApi.UserVipRecord>['columns'] {
+export function useColumns(
+  onUidClick?: (uid: string) => void,
+): VxeTableGridOptions<UserVipApi.UserVipRecord>['columns'] {
   return [
     {
       title: '用户',
@@ -35,16 +37,20 @@ export function useColumns(): VxeTableGridOptions<UserVipApi.UserVipRecord>['col
       field: 'uid',
       width: 110,
       slots: {
-        default: ({ row }) =>
-          h(
+        default: ({ row }) => {
+          if (!row.uid) {
+            return h('span', { class: 'text-muted-foreground' }, '-');
+          }
+          return h(
             'span',
             {
-              class: 'cursor-pointer select-all font-mono hover:underline',
-              title: '点击复制 UID',
-              onClick: () => row.uid && copyWithTip(row.uid, `已复制 ${row.uid}`),
+              class: 'cursor-pointer font-mono text-blue-600 hover:underline',
+              title: '点击查看用户信息',
+              onClick: () => onUidClick?.(row.uid!),
             },
-            row.uid ?? '-',
-          ),
+            row.uid,
+          );
+        },
       },
     },
     {

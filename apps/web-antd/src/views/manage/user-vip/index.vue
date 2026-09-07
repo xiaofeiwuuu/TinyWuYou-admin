@@ -11,6 +11,13 @@ import { getUserListApi, type UserManageApi } from '#/api/manage/user';
 import { getUserVipListApi } from '#/api/manage/user-vip';
 
 import { getSourceTypeOptions, useColumns } from './data';
+import UserInfoModal from './modules/user-info.vue';
+
+// UID 列点击弹出的用户信息弹窗
+const userInfoRef = ref<InstanceType<typeof UserInfoModal>>();
+function handleUidClick(uid: string) {
+  userInfoRef.value?.open(uid);
+}
 
 // 两个独立的远程搜索：用户名按 nickname 联想、UID 按 uid 联想
 const nameOptions = ref<{ label: string; value: string }[]>([]);
@@ -128,7 +135,7 @@ const formOptions: VbenFormProps = {
 const [Grid] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
-    columns: useColumns(),
+    columns: useColumns(handleUidClick),
     height: 'auto',
     keepSource: true,
     pagerConfig: {
@@ -172,5 +179,6 @@ const [Grid] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <Grid table-title="VIP开通记录" />
+    <UserInfoModal ref="userInfoRef" />
   </Page>
 </template>

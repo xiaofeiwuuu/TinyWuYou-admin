@@ -7,8 +7,10 @@ export namespace UserVipApi {
   export interface ListParams {
     page?: number;
     pageSize?: number;
-    /** 用户昵称、UID 或 openid */
-    userKeyword?: string;
+    /** 用户昵称（远程搜索） */
+    nickname?: string;
+    /** 用户 UID（远程搜索） */
+    uid?: string;
     /** 卡号 */
     cardCode?: string;
     sourceType?: SourceType;

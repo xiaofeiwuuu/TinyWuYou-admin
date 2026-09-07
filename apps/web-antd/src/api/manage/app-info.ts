@@ -8,18 +8,6 @@ export namespace AppInfoApi {
     workTime: string;
   }
 
-  /** 公告弹窗 */
-  export interface Announcement {
-    enabled: boolean;
-    title: string;
-    content: string;
-    /**
-     * 公告版本号。小程序按它判断要不要再弹一次：
-     * 内容改了就把它 +1，所有用户会再看到一次；不改就每人只弹一次。
-     */
-    version: number;
-  }
-
   /** 常见问题的一条 */
   export interface FaqItem {
     title: string;
@@ -40,7 +28,6 @@ export namespace AppInfoApi {
     app_logo: string;
     share_title: string;
     contact_info: ContactInfo;
-    announcement: Announcement;
   }
 
   export interface UpdateItem {

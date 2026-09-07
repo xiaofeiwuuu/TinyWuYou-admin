@@ -27,12 +27,39 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'OperationAnnouncement',
+        path: '/operation/announcement',
+        component: () => import('#/views/manage/announcement/index.vue'),
+        meta: {
+          icon: 'lucide:megaphone',
+          title: $t('公告管理'),
+        },
+      },
+      {
         name: 'OperationVip',
         path: '/operation/vip',
         component: () => import('#/views/manage/vip/index.vue'),
         meta: {
           icon: 'lucide:crown',
           title: $t('VIP卡密'),
+        },
+      },
+      {
+        name: 'OperationVirtualPay',
+        path: '/operation/virtualpay',
+        component: () => import('#/views/manage/virtualpay/index.vue'),
+        meta: {
+          icon: 'lucide:shopping-bag',
+          title: $t('虚拟商品'),
+        },
+      },
+      {
+        name: 'OperationDownloadLimit',
+        path: '/operation/download-limit',
+        component: () => import('#/views/manage/download-limit/index.vue'),
+        meta: {
+          icon: 'lucide:download',
+          title: $t('下载限制'),
         },
       },
       {

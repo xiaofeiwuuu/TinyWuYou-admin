@@ -19,6 +19,8 @@ const emit = defineEmits(['success']);
 
 const uploadedFiles = ref<any[]>([]);
 const uploadingCount = ref(0);
+// 提交成功标记：成功入库后关闭弹窗时，不把已被引用的图当孤儿删掉
+let submitted = false;
 const MAX_CONCURRENT_UPLOADS = 3; // 最大并发上传数
 
 // 上传队列
@@ -124,7 +126,9 @@ const [Form, formApi] = useVbenForm({
       },
       fieldName: 'categoryId',
       label: '分类',
-      rules: z.string().min(1, '请选择分类'),
+      // 分类下拉的 value 是分类 id(数字)，不能用 z.string() 校验，否则选了也报错。
+      // z.coerce.number() 让选中的 number 通过；未选(undefined)→NaN→min(1) 触发「请选择分类」
+      rules: z.coerce.number().min(1, '请选择分类'),
       formItemClass: 'col-span-2',
     },
     {
@@ -197,9 +201,56 @@ const handleRemove = async (file: any) => {
   return true;
 };
 
+/**
+ * 清理孤儿文件：已上传到 OSS 但没提交入库的图片。
+ * 用户传了图却不点确认、直接关弹窗时调用，避免存储里留下无引用的文件。
+ * 不 await —— 让弹窗立刻关闭，删除请求在后台跑（await 会卡住关闭，用户以为没反应连点）。
+ */
+function cleanupOrphanUploads() {
+  const doneFiles = uploadedFiles.value.filter(
+    (file: any) => file.status === 'done',
+  );
+  doneFiles.forEach((file: any) => {
+    let url = file.response?.url || file.url;
+    if (!url) {
+      return;
+    }
+    if (url.includes('://')) {
+      try {
+        url = new URL(url).pathname;
+      } catch {
+        // 保持原值
+      }
+    }
+    deleteUploadedFile(url).catch((error) => {
+      console.error('清理孤儿文件失败:', error);
+    });
+  });
+}
+
 const [Modal, modalApi] = useVbenModal({
   class: 'w-[600px]',
+  // 点遮罩 / 按 Esc 不关弹窗，避免误触把上传了一半的批量操作关掉
+  closeOnClickModal: false,
+  closeOnPressEscape: false,
+  // 上传进行中拦截关闭（取消 / 右上角 X / Esc / 遮罩都会走到这里）
+  async onBeforeClose() {
+    if (uploadingCount.value > 0 || uploadQueue.length > 0) {
+      message.warning('图片正在上传中，请等待上传完成后再关闭');
+      return false;
+    }
+    // 没提交成功就关掉、且已经传了图 → 清理这些没入库的孤儿文件（不 await，后台删）
+    if (!submitted) {
+      cleanupOrphanUploads();
+    }
+    return true;
+  },
   async onConfirm() {
+    // 还有图片在传/排队就点了确认，会漏掉这些图片，先拦下
+    if (uploadingCount.value > 0 || uploadQueue.length > 0) {
+      message.warning('图片还在上传中，请稍候');
+      return;
+    }
     const { valid } = await formApi.validate();
     if (valid) {
       // 检查是否有上传的文件
@@ -250,6 +301,8 @@ const [Modal, modalApi] = useVbenModal({
           images,
         });
 
+        // 标记已提交：这些图已入库被引用，onBeforeClose 不再当孤儿删掉
+        submitted = true;
         message.success(`成功创建 ${images.length} 张图片`);
         modalApi.close();
         emit('success');
@@ -268,6 +321,7 @@ const [Modal, modalApi] = useVbenModal({
       uploadedFiles.value = [];
       uploadingCount.value = 0;
       uploadQueue.length = 0; // 清空上传队列
+      submitted = false; // 每次打开重置提交标记
     }
   },
 });

@@ -9,15 +9,11 @@ import { Button as AButton, Card, message } from 'ant-design-vue';
 
 import { z } from '#/adapter/form';
 import { getPlatformListApi, updatePlatformsApi } from '#/api/manage/platform';
-import {
-  getSystemConfigListApi,
-  updateSystemConfigApi,
-} from '#/api/manage/system-config';
+
 import CertStatus from './cert-status.vue';
 
 const loading = ref(false);
 const platformDisabled = ref(true);
-const configDisabled = ref(true);
 const weixinPlatform = ref<null | PlatformManageApi.PlatformConfig>(null);
 
 // 微信平台配置表单
@@ -34,79 +30,70 @@ const [PlatformForm, platformFormApi] = useVbenForm({
       component: 'Input',
       fieldName: 'platform',
       label: '平台标识',
-      componentProps: {
-        placeholder: '平台标识',
-        disabled: true,
-      },
+      componentProps: { placeholder: '平台标识', disabled: true },
       rules: z.string(),
     },
     {
       component: 'Input',
       fieldName: 'platformName',
       label: '平台名称',
-      componentProps: {
-        placeholder: '请输入平台名称',
-        disabled: true,
-      },
+      componentProps: { placeholder: '请输入平台名称', disabled: true },
       rules: z.string(),
     },
     {
       component: 'Input',
       fieldName: 'appId',
       label: 'AppID',
-      componentProps: {
-        placeholder: '请输入 AppID',
-        disabled: true,
-      },
+      componentProps: { placeholder: '请输入 AppID', disabled: true },
       rules: z.string(),
     },
     {
       component: 'InputPassword',
       fieldName: 'appSecret',
       label: 'AppSecret',
-      componentProps: {
-        placeholder: '请输入 AppSecret',
-        disabled: true,
-      },
+      componentProps: { placeholder: '请输入 AppSecret', disabled: true },
       rules: z.string(),
     },
-  ],
-  showDefaultActions: false,
-});
-
-// 系统配置表单
-const [ConfigForm, configFormApi] = useVbenForm({
-  layout: 'horizontal',
-  wrapperClass: 'grid-cols-1',
-  commonConfig: {
-    componentProps: {
-      class: 'w-full',
-    },
-  },
-  schema: [
+    // 以下 4 项为虚拟支付配置，序列化后存进 extraConfig
     {
-      component: 'InputNumber',
-      fieldName: 'daily_download_limit',
-      label: '普通用户每日下载限制',
-      componentProps: {
-        placeholder: '请输入下载次数限制(0为不限制)',
-        disabled: true,
-        min: 0,
-        max: 1000,
-      },
-      rules: z.number().min(0),
+      component: 'Input',
+      fieldName: 'offerId',
+      label: 'OfferID',
+      componentProps: { placeholder: '虚拟支付 OfferID', disabled: true },
     },
     {
-      component: 'InputNumber',
-      fieldName: 'vip_daily_download_limit',
-      label: 'VIP用户每日下载限制',
+      component: 'InputPassword',
+      fieldName: 'prodAppKey',
+      label: '现网 AppKey',
+      componentProps: { placeholder: '虚拟支付现网 AppKey', disabled: true },
+    },
+    {
+      component: 'InputPassword',
+      fieldName: 'sandboxAppKey',
+      label: '沙箱 AppKey',
+      componentProps: { placeholder: '虚拟支付沙箱 AppKey（联调用）', disabled: true },
+    },
+    {
+      component: 'Select',
+      fieldName: 'payEnv',
+      label: '支付环境',
       componentProps: {
-        placeholder: '请输入下载次数限制(0为不限制)',
+        placeholder: '选择支付环境',
         disabled: true,
-        min: 0,
-        max: 10_000,
+        options: [
+          { label: '现网（用现网AppKey）', value: 0 },
+          { label: '沙箱（用沙箱AppKey，联调）', value: 1 },
+        ],
       },
-      rules: z.number().min(0),
+    },
+    {
+      component: 'Input',
+      fieldName: 'pushToken',
+      label: '消息推送Token',
+      componentProps: {
+        placeholder: '与微信「消息推送配置」里的 Token 一致（3-32位英数）',
+        disabled: true,
+      },
     },
   ],
   showDefaultActions: false,
@@ -119,11 +106,23 @@ async function loadPlatformConfig() {
     const weixin = data.find((p) => p.platform === 'weixin');
     if (weixin) {
       weixinPlatform.value = weixin;
+      // extraConfig 是 JSON 字符串，解析出虚拟支付 4 项回填
+      let extra: any = {};
+      try {
+        extra = weixin.extraConfig ? JSON.parse(weixin.extraConfig) : {};
+      } catch {
+        extra = {};
+      }
       await platformFormApi.setValues({
         platform: weixin.platform,
         platformName: weixin.platformName,
         appId: weixin.appId,
         appSecret: weixin.appSecret,
+        offerId: extra.offerId || '',
+        prodAppKey: extra.prodAppKey || '',
+        sandboxAppKey: extra.sandboxAppKey || '',
+        payEnv: Number(extra.payEnv) || 0,
+        pushToken: extra.pushToken || '',
       });
     }
   } catch {
@@ -131,56 +130,28 @@ async function loadPlatformConfig() {
   }
 }
 
-// 加载系统配置
-async function loadSystemConfig() {
-  try {
-    const configs = await getSystemConfigListApi();
-    const dailyLimit = configs.find(
-      (c) => c.configKey === 'daily_download_limit',
-    );
-    const vipLimit = configs.find(
-      (c) => c.configKey === 'vip_daily_download_limit',
-    );
-    const formValues = {
-      daily_download_limit: dailyLimit ? Number(dailyLimit.configValue) : 20,
-      vip_daily_download_limit: vipLimit ? Number(vipLimit.configValue) : 0,
-    };
-    await configFormApi.setValues(formValues);
-  } catch (error) {
-    console.error('加载系统配置失败:', error);
-    message.error('加载系统配置失败');
-  }
-}
-
 // 编辑微信配置
 function handleEditPlatform() {
-  platformFormApi.setState((prev) => {
-    return {
-      schema: prev.schema?.map((item) => ({
-        ...item,
-        componentProps: {
-          ...item.componentProps,
-          disabled: item.fieldName === 'platform', // 平台标识始终禁用
-        },
-      })),
-    };
-  });
+  platformFormApi.setState((prev) => ({
+    schema: prev.schema?.map((item) => ({
+      ...item,
+      componentProps: {
+        ...item.componentProps,
+        disabled: item.fieldName === 'platform', // 平台标识始终禁用
+      },
+    })),
+  }));
   platformDisabled.value = false;
 }
 
 // 取消编辑微信配置
 function handleCancelPlatform() {
-  platformFormApi.setState((prev) => {
-    return {
-      schema: prev.schema?.map((item) => ({
-        ...item,
-        componentProps: {
-          ...item.componentProps,
-          disabled: true,
-        },
-      })),
-    };
-  });
+  platformFormApi.setState((prev) => ({
+    schema: prev.schema?.map((item) => ({
+      ...item,
+      componentProps: { ...item.componentProps, disabled: true },
+    })),
+  }));
   platformDisabled.value = true;
   loadPlatformConfig();
 }
@@ -196,6 +167,14 @@ async function handleSavePlatform() {
     }
 
     const values = await platformFormApi.getValues();
+    // 虚拟支付 4 项序列化进 extraConfig
+    const extraConfig = JSON.stringify({
+      offerId: values.offerId || '',
+      prodAppKey: values.prodAppKey || '',
+      sandboxAppKey: values.sandboxAppKey || '',
+      payEnv: Number(values.payEnv) || 0,
+      pushToken: values.pushToken || '',
+    });
     await updatePlatformsApi([
       {
         platform: values.platform,
@@ -203,118 +182,19 @@ async function handleSavePlatform() {
         appId: values.appId,
         appSecret: values.appSecret,
         isEnabled: weixinPlatform.value?.isEnabled || 1,
-        extraConfig: weixinPlatform.value?.extraConfig || '',
+        extraConfig,
       },
     ]);
     message.success('保存成功');
 
-    // 先加载新数据
     await loadPlatformConfig();
-
-    // 加载完成后再禁用表单
-    platformFormApi.setState((prev) => {
-      return {
-        schema: prev.schema?.map((item) => ({
-          ...item,
-          componentProps: {
-            ...item.componentProps,
-            disabled: true,
-          },
-        })),
-      };
-    });
+    platformFormApi.setState((prev) => ({
+      schema: prev.schema?.map((item) => ({
+        ...item,
+        componentProps: { ...item.componentProps, disabled: true },
+      })),
+    }));
     platformDisabled.value = true;
-  } catch (error: any) {
-    message.error(error?.message || '保存失败');
-  } finally {
-    loading.value = false;
-  }
-}
-
-// 编辑系统配置
-function handleEditConfig() {
-  configFormApi.setState((prev) => {
-    return {
-      schema: prev.schema?.map((item) => ({
-        ...item,
-        componentProps: {
-          ...item.componentProps,
-          disabled: false,
-        },
-      })),
-    };
-  });
-  configDisabled.value = false;
-}
-
-// 取消编辑系统配置
-function handleCancelConfig() {
-  configFormApi.setState((prev) => {
-    return {
-      schema: prev.schema?.map((item) => ({
-        ...item,
-        componentProps: {
-          ...item.componentProps,
-          disabled: true,
-        },
-      })),
-    };
-  });
-  configDisabled.value = true;
-  loadSystemConfig();
-}
-
-// 保存系统配置
-async function handleSaveConfig() {
-  loading.value = true;
-  try {
-    const { valid } = await configFormApi.validate();
-    if (!valid) {
-      loading.value = false;
-      return;
-    }
-
-    const values = await configFormApi.getValues();
-
-    // 确保值不为 undefined
-    const dailyLimit = values.daily_download_limit ?? 20;
-    const vipLimit = values.vip_daily_download_limit ?? 0;
-
-    // 更新普通用户限制
-    const req1 = {
-      configKey: 'daily_download_limit',
-      configValue: String(dailyLimit),
-      configDesc: '用户每日最大下载次数(0为不限制)',
-      valueType: 'number',
-    };
-    await updateSystemConfigApi(req1);
-
-    // 更新VIP用户限制
-    const req2 = {
-      configKey: 'vip_daily_download_limit',
-      configValue: String(vipLimit),
-      configDesc: 'VIP用户每日最大下载次数(0为不限制)',
-      valueType: 'number',
-    };
-    await updateSystemConfigApi(req2);
-
-    message.success('保存成功');
-
-    await loadSystemConfig();
-
-    // 加载完成后再禁用表单
-    configFormApi.setState((prev) => {
-      return {
-        schema: prev.schema?.map((item) => ({
-          ...item,
-          componentProps: {
-            ...item.componentProps,
-            disabled: true,
-          },
-        })),
-      };
-    });
-    configDisabled.value = true;
   } catch (error: any) {
     message.error(error?.message || '保存失败');
   } finally {
@@ -324,7 +204,6 @@ async function handleSaveConfig() {
 
 onMounted(() => {
   loadPlatformConfig();
-  loadSystemConfig();
 });
 </script>
 
@@ -358,34 +237,6 @@ onMounted(() => {
               保存配置
             </AButton>
             <AButton @click="handleCancelPlatform"> 取消 </AButton>
-          </div>
-        </div>
-      </Card>
-
-      <!-- 系统配置 -->
-      <Card title="系统配置" :bordered="false">
-        <template #extra>
-          <AButton
-            v-if="configDisabled"
-            type="primary"
-            @click="handleEditConfig"
-          >
-            修改
-          </AButton>
-        </template>
-
-        <div class="mx-auto max-w-3xl">
-          <ConfigForm />
-
-          <div v-if="!configDisabled" class="mt-4 flex gap-2">
-            <AButton
-              type="primary"
-              :loading="loading"
-              @click="handleSaveConfig"
-            >
-              保存配置
-            </AButton>
-            <AButton @click="handleCancelConfig"> 取消 </AButton>
           </div>
         </div>
       </Card>

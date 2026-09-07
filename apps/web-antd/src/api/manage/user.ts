@@ -60,10 +60,13 @@ export async function getUserListApi(params: UserManageApi.ListParams) {
 }
 
 /**
- * 更新用户下载次数
+ * 调整用户下载次数（传增减量：正数增加、负数扣减，后端原子处理且不低于 0）
  */
-export async function updateUserDownloadCountApi(id: number, count: number) {
-  return requestClient.put(`/admin/users/${id}/download-count`, { count });
+export async function adjustUserDownloadCountApi(id: number, delta: number) {
+  return requestClient.put<{ downloadCount: number }>(
+    `/admin/users/${id}/download-count`,
+    { delta },
+  );
 }
 
 /**

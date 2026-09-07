@@ -24,7 +24,7 @@ import {
   cancelUserVipApi,
   getUserListApi,
   toggleUserStatusApi,
-  updateUserDownloadCountApi,
+  adjustUserDownloadCountApi,
   updateUserRemarkApi,
 } from '#/api/manage/user';
 import { copyWithTip } from '#/utils/clipboard';
@@ -528,28 +528,32 @@ const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions,
 });
 
-// 调整次数
+// 调整次数：输入增减量（正数增加、负数扣减），而不是覆盖绝对值
 const handleEditCount = (row: UserManageApi.UserInfo) => {
-  prompt({
-    title: `调整下载次数 - 用户ID: ${row.id}`,
-    content: '请输入新的下载次数',
+  prompt<number>({
+    title: `调整下载次数 - ${row.nickname || row.uid}`,
+    content: `当前剩余 ${row.downloadCount} 次。输入增减量：正数增加、负数扣减（最多可扣 ${row.downloadCount}）。`,
     component: InputNumber,
     componentProps: {
-      min: 0,
-      placeholder: '请输入下载次数',
+      // 不允许扣到负数：下限就是把当前次数全部扣光
+      min: -(row.downloadCount || 0),
+      placeholder: '如 10 表示增加 10，-5 表示扣减 5',
       style: { width: '100%' },
     },
-    defaultValue: row.downloadCount,
+    defaultValue: 0,
     modelPropName: 'value',
-  }).then(async (val) => {
-    if (val !== undefined && val !== null) {
-      try {
-        await updateUserDownloadCountApi(row.id, val);
-        message.success('调整成功');
-        gridApi.reload();
-      } catch (error: any) {
-        message.error(error.message || '调整失败');
-      }
+  }).then(async (delta) => {
+    if (delta === undefined || delta === null || delta === 0) {
+      return;
+    }
+    try {
+      const { downloadCount } = await adjustUserDownloadCountApi(row.id, delta);
+      message.success(
+        `${delta > 0 ? '增加' : '扣减'} ${Math.abs(delta)} 次，当前剩余 ${downloadCount} 次`,
+      );
+      gridApi.reload();
+    } catch (error: any) {
+      message.error(error.message || '调整失败');
     }
   });
 };

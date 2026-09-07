@@ -1,15 +1,12 @@
 <script lang="ts" setup>
+import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { ref } from 'vue';
-
-import { useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { formatDateTime } from '@vben/utils';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getVirtualOrderListApi } from '#/api/manage/virtualpay';
-
-const currentUserId = ref<number>();
 
 const statusText: Record<string, string> = {
   pending: '待支付',
@@ -18,9 +15,34 @@ const statusText: Record<string, string> = {
   failed: '失败',
 };
 
-const [Grid, gridApi] = useVbenVxeGrid({
+const formOptions: VbenFormProps = {
+  collapsed: false,
+  wrapperClass: 'grid-cols-2 md:grid-cols-3',
+  schema: [
+    {
+      component: 'Input',
+      fieldName: 'uid',
+      label: '会员UID',
+      componentProps: { placeholder: '精确匹配 UID' },
+    },
+    {
+      component: 'Input',
+      fieldName: 'keyword',
+      label: '搜索会员',
+      componentProps: { placeholder: '昵称 / UID 模糊搜索' },
+    },
+  ],
+  showCollapseButton: false,
+  submitOnChange: false,
+  submitOnEnter: true,
+};
+
+const [Grid] = useVbenVxeGrid({
+  formOptions,
   gridOptions: {
     columns: [
+      { title: 'UID', field: 'uid', width: 110 },
+      { title: '昵称', field: 'nickname', minWidth: 120 },
       { title: '订单号', field: 'outTradeNo', minWidth: 180 },
       {
         title: '类型',
@@ -28,7 +50,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         width: 100,
         formatter: ({ cellValue }) => (cellValue === 'vip' ? 'VIP会员' : '下载次数'),
       },
-      { title: '商品ID', field: 'productId', width: 120 },
+      { title: '商品ID', field: 'productId', width: 110 },
       { title: '数量', field: 'amount', width: 80 },
       {
         title: '金额',
@@ -65,13 +87,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
     height: 'auto',
     keepSource: true,
     pagerConfig: { enabled: true },
+    stripe: true,
     proxyConfig: {
       response: { result: 'list', total: 'total' },
       ajax: {
-        query: async ({ page }) => {
-          if (!currentUserId.value) return { list: [], total: 0 };
+        query: async ({ page }, formValues) => {
           return await getVirtualOrderListApi({
-            userId: currentUserId.value,
+            uid: formValues.uid ? String(formValues.uid).trim() : undefined,
+            keyword: formValues.keyword || undefined,
             page: page.currentPage,
             pageSize: page.pageSize,
           });
@@ -79,27 +102,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { isHover: true },
-    toolbarConfig: { refresh: true },
+    toolbarConfig: { refresh: true, zoom: true },
   } as VxeTableGridOptions,
 });
-
-const [Modal, modalApi] = useVbenModal({
-  footer: false,
-  onOpenChange(isOpen) {
-    if (isOpen) gridApi.query();
-  },
-});
-
-function open(userId: number) {
-  currentUserId.value = userId;
-  modalApi.open();
-}
-
-defineExpose({ open });
 </script>
 
 <template>
-  <Modal class="w-[960px]" title="购买记录">
-    <Grid />
-  </Modal>
+  <Page auto-content-height>
+    <Grid table-title="购买记录" />
+  </Page>
 </template>

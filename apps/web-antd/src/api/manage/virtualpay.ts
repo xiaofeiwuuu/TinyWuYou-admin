@@ -73,7 +73,8 @@ export namespace VirtualPayApi {
     id: number;
     outTradeNo: string;
     userId: number;
-    openid: string;
+    uid: string;
+    nickname: string;
     productId: string;
     productType: string; // vip / download
     amount: number;
@@ -91,9 +92,10 @@ export namespace VirtualPayApi {
   }
 }
 
-/** 购买订单列表（可按 userId 筛选，用于用户管理里查购买记录） */
+/** 购买订单列表（独立页，可按会员 uid / keyword 搜索） */
 export async function getVirtualOrderListApi(params: {
-  userId?: number;
+  uid?: string;
+  keyword?: string;
   page?: number;
   pageSize?: number;
 }) {

@@ -54,6 +54,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'OperationVirtualOrder',
+        path: '/operation/virtualpay-order',
+        component: () => import('#/views/manage/virtualpay-order/index.vue'),
+        meta: {
+          icon: 'lucide:receipt',
+          title: $t('购买记录'),
+        },
+      },
+      {
         name: 'OperationDownloadLimit',
         path: '/operation/download-limit',
         component: () => import('#/views/manage/download-limit/index.vue'),

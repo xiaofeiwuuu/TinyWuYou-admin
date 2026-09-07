@@ -22,16 +22,6 @@ const [Modal, modalApi] = useVbenModal();
 const loading = ref(false);
 const user = ref<null | UserManageApi.UserInfo>(null);
 
-const levelText = computed(() => {
-  const map: Record<number, string> = {
-    1: 'LV1',
-    2: 'LV2',
-    3: 'LV3',
-    4: 'LV4',
-  };
-  return user.value ? map[user.value.userLevel] || `LV${user.value.userLevel}` : '-';
-});
-
 const vipValid = computed(() => {
   if (!user.value || user.value.isVip !== 1) return false;
   return (
@@ -110,7 +100,6 @@ defineExpose({ open });
             {{ user.status === 1 ? '正常' : '已禁用' }}
           </ATag>
         </ADescriptionsItem>
-        <ADescriptionsItem label="用户等级">{{ levelText }}</ADescriptionsItem>
         <ADescriptionsItem label="会员状态">
           <ATag :color="vipValid ? 'gold' : 'default'">
             {{ vipValid ? 'VIP' : '非VIP' }}

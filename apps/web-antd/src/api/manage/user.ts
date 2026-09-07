@@ -11,7 +11,6 @@ export namespace UserManageApi {
     uid?: string;
     nickname?: string;
     keyword?: string;
-    userLevel?: number;
     isVip?: number;
   }
 
@@ -26,7 +25,6 @@ export namespace UserManageApi {
     nickname: string;
     avatarUrl: string;
     downloadCount: number;
-    userLevel: number;
     isVip: number;
     vipExpireTime: string | null;
     totalDownloads: number;

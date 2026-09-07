@@ -123,22 +123,6 @@ const formOptions: VbenFormProps = {
     },
     {
       component: 'Select',
-      fieldName: 'userLevel',
-      label: '用户等级',
-      componentProps: {
-        allowClear: true,
-        placeholder: '全部',
-        dropdownMatchSelectWidth: false,
-        options: [
-          { label: 'LV1 (0-50)', value: 1 },
-          { label: 'LV2 (51-200)', value: 2 },
-          { label: 'LV3 (201-500)', value: 3 },
-          { label: 'LV4 (500+)', value: 4 },
-        ],
-      },
-    },
-    {
-      component: 'Select',
       fieldName: 'isVip',
       label: 'VIP状态',
       componentProps: {
@@ -155,11 +139,6 @@ const formOptions: VbenFormProps = {
   showCollapseButton: false,
   submitOnChange: false,
   submitOnEnter: true,
-};
-
-const getLevelColor = (level: number) => {
-  const colors = ['', 'blue', 'green', 'orange', 'red'];
-  return colors[level] || 'default';
 };
 
 const formatDate = (date: string) => {
@@ -274,24 +253,6 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
               style: { color: platform.color, fontWeight: 500 },
             },
             `${platform.name}`,
-          );
-        },
-      },
-    },
-    {
-      title: '用户等级',
-      field: 'userLevel',
-      width: 100,
-      slots: {
-        default: ({ row }) => {
-          const color = getLevelColor(row.userLevel);
-          return h(
-            'span',
-            {
-              class: `ant-tag ant-tag-${color}`,
-              style: { borderRadius: '2px' },
-            },
-            `LV${row.userLevel}`,
           );
         },
       },
@@ -504,10 +465,6 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
           nickname: formValues.nickname
             ? String(formValues.nickname).trim()
             : undefined,
-          userLevel:
-            formValues.userLevel !== undefined && formValues.userLevel !== ''
-              ? Number(formValues.userLevel)
-              : undefined,
           isVip:
             formValues.isVip !== undefined && formValues.isVip !== ''
               ? Number(formValues.isVip)

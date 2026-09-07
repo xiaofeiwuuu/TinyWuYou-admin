@@ -41,24 +41,54 @@ const canEdit = hasAccessByCodes(['user:edit']);
 const vipGrantFormRef = ref<InstanceType<typeof VipForm>>();
 const vipRenewFormRef = ref<InstanceType<typeof VipForm>>();
 
+// UID 远程搜索：输入 UID/昵称片段，防抖查后端返回匹配用户供下拉选择
+const userOptions = ref<{ label: string; value: string }[]>([]);
+let userSearchTimer: any;
+const handleUserSearch = (kw: string) => {
+  clearTimeout(userSearchTimer);
+  const key = (kw || '').trim();
+  if (!key) {
+    userOptions.value = [];
+    return;
+  }
+  userSearchTimer = setTimeout(async () => {
+    try {
+      const res = await getUserListApi({ keyword: key, page: 1, pageSize: 20 });
+      userOptions.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
+        label: `${u.uid} · ${u.nickname || '(无昵称)'}`,
+        value: u.uid,
+      }));
+    } catch {
+      userOptions.value = [];
+    }
+  }, 300);
+};
+
 const formOptions: VbenFormProps = {
   collapsed: false,
   wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-5',
   schema: [
     {
-      component: 'Input',
+      component: 'Select',
       fieldName: 'uid',
       label: 'UID',
-      componentProps: {
-        placeholder: '8位数字，精确匹配',
-      },
+      // 函数式 componentProps 是响应式的，userOptions 变化会自动刷新下拉项
+      componentProps: () => ({
+        allowClear: true,
+        filterOption: false, // 远程搜索，不做本地过滤
+        notFoundContent: null,
+        onSearch: handleUserSearch,
+        options: userOptions.value,
+        placeholder: '输入 UID / 昵称 远程搜索',
+        showSearch: true,
+      }),
     },
     {
       component: 'Input',
       fieldName: 'keyword',
-      label: '搜索',
+      label: '用户名',
       componentProps: {
-        placeholder: '昵称/UID/邀请码/OpenID',
+        placeholder: '按用户名搜索',
       },
     },
     {

@@ -33,6 +33,8 @@ export namespace UserVipApi {
     /** VIP 到期时间 */
     expireTime: string;
     sourceType: SourceType;
+    /** 后台赠送的操作管理员（真实姓名/用户名），仅 sourceType=admin 有值 */
+    operatorName: null | string;
     /** 开通（兑换）时间 */
     activatedAt: string;
     /** 以下字段只有 sourceType 为 card 时才有 */

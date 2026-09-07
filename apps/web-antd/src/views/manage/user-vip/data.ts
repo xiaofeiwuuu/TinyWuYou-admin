@@ -63,6 +63,14 @@ export function useColumns(
       },
     },
     {
+      // 仅后台赠送(admin)才有操作人；卡密/购买是用户自助，显示「-」
+      title: '操作人',
+      field: 'operatorName',
+      minWidth: 110,
+      formatter: ({ row }) =>
+        row.sourceType === 'admin' ? row.operatorName || '(未记录)' : '-',
+    },
+    {
       title: '卡号',
       field: 'cardCode',
       minWidth: 200,

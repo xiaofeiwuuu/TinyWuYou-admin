@@ -327,6 +327,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       title: '操作',
       width: 200,
       fixed: 'right',
+      align: 'center',
       slots: {
         default: ({ row }) => {
           // 判断口径与「VIP状态」列一致（row.isVip === 1）
@@ -350,11 +351,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
                         onClick: (e: Event) => e.preventDefault(),
                       },
                       [
-                        'VIP管理 ',
-                        h('span', {
-                          class: 'icon-[ant-design--down-outlined]',
-                          style: { fontSize: '12px' },
-                        }),
+                        '管理VIP ',
                       ],
                     ),
                   overlay: () =>
@@ -393,7 +390,15 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
 
           return h(
             'div',
-            { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+            {
+              style: {
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            },
             [
               h(
                 'a',

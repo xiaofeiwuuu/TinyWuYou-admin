@@ -26,7 +26,6 @@ export function useColumns(
   onUidClick?: (uid: string) => void,
 ): VxeTableGridOptions<InvitationManageApi.InvitationInfo>['columns'] {
   return [
-    { title: '序号', type: 'seq', width: 50 },
     {
       title: '邀请人UID',
       field: 'inviterUid',

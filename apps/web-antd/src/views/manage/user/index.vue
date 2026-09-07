@@ -41,25 +41,48 @@ const canEdit = hasAccessByCodes(['user:edit']);
 const vipGrantFormRef = ref<InstanceType<typeof VipForm>>();
 const vipRenewFormRef = ref<InstanceType<typeof VipForm>>();
 
-// UID 远程搜索：输入 UID/昵称片段，防抖查后端返回匹配用户供下拉选择
-const userOptions = ref<{ label: string; value: string }[]>([]);
-let userSearchTimer: any;
-const handleUserSearch = (kw: string) => {
-  clearTimeout(userSearchTimer);
+// 两个独立的远程搜索：UID 按 uid 联想、用户名按 nickname 联想（各查各的字段）
+const uidOptions = ref<{ label: string; value: string }[]>([]);
+const nameOptions = ref<{ label: string; value: string }[]>([]);
+let uidTimer: any;
+let nameTimer: any;
+
+const handleUidSearch = (kw: string) => {
+  clearTimeout(uidTimer);
   const key = (kw || '').trim();
   if (!key) {
-    userOptions.value = [];
+    uidOptions.value = [];
     return;
   }
-  userSearchTimer = setTimeout(async () => {
+  uidTimer = setTimeout(async () => {
     try {
-      const res = await getUserListApi({ keyword: key, page: 1, pageSize: 20 });
-      userOptions.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
+      const res = await getUserListApi({ uid: key, page: 1, pageSize: 20 });
+      uidOptions.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
         label: `${u.uid} · ${u.nickname || '(无昵称)'}`,
         value: u.uid,
       }));
     } catch {
-      userOptions.value = [];
+      uidOptions.value = [];
+    }
+  }, 300);
+};
+
+const handleNameSearch = (kw: string) => {
+  clearTimeout(nameTimer);
+  const key = (kw || '').trim();
+  if (!key) {
+    nameOptions.value = [];
+    return;
+  }
+  nameTimer = setTimeout(async () => {
+    try {
+      const res = await getUserListApi({ nickname: key, page: 1, pageSize: 20 });
+      nameOptions.value = (res.list || []).map((u: UserManageApi.UserInfo) => ({
+        label: `${u.nickname || '(无昵称)'} · ${u.uid}`,
+        value: u.nickname || '',
+      }));
+    } catch {
+      nameOptions.value = [];
     }
   }, 300);
 };
@@ -72,24 +95,31 @@ const formOptions: VbenFormProps = {
       component: 'Select',
       fieldName: 'uid',
       label: 'UID',
-      // 函数式 componentProps 是响应式的，userOptions 变化会自动刷新下拉项
+      // 函数式 componentProps 是响应式的，uidOptions 变化会自动刷新下拉项
       componentProps: () => ({
         allowClear: true,
         filterOption: false, // 远程搜索，不做本地过滤
         notFoundContent: null,
-        onSearch: handleUserSearch,
-        options: userOptions.value,
-        placeholder: '输入 UID / 昵称 远程搜索',
+        onSearch: handleUidSearch,
+        options: uidOptions.value,
+        placeholder: '输入 UID 远程搜索',
         showSearch: true,
       }),
     },
     {
-      component: 'Input',
-      fieldName: 'keyword',
+      component: 'Select',
+      fieldName: 'nickname',
       label: '用户名',
-      componentProps: {
-        placeholder: '按用户名搜索',
-      },
+      // 独立的用户名远程搜索，按 nickname 联想
+      componentProps: () => ({
+        allowClear: true,
+        filterOption: false,
+        notFoundContent: null,
+        onSearch: handleNameSearch,
+        options: nameOptions.value,
+        placeholder: '输入用户名远程搜索',
+        showSearch: true,
+      }),
     },
     {
       component: 'Select',
@@ -471,7 +501,9 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
           page: page.currentPage,
           pageSize: page.pageSize,
           uid: formValues.uid ? String(formValues.uid).trim() : undefined,
-          keyword: formValues.keyword || undefined,
+          nickname: formValues.nickname
+            ? String(formValues.nickname).trim()
+            : undefined,
           userLevel:
             formValues.userLevel !== undefined && formValues.userLevel !== ''
               ? Number(formValues.userLevel)

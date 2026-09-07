@@ -9,6 +9,7 @@ export namespace UserManageApi {
     id?: number;
     /** 对外用户标识（8位数字，精确匹配） */
     uid?: string;
+    nickname?: string;
     keyword?: string;
     userLevel?: number;
     isVip?: number;

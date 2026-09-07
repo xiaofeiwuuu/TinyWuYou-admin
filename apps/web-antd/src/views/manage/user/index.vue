@@ -30,6 +30,7 @@ import {
 import { copyWithTip } from '#/utils/clipboard';
 
 import VipForm from './modules/vip-form.vue';
+import PurchaseRecords from './modules/purchase-records.vue';
 
 const { TextArea } = Input;
 
@@ -40,6 +41,7 @@ const canEdit = hasAccessByCodes(['user:edit']);
 // VIP管理表单组件引用
 const vipGrantFormRef = ref<InstanceType<typeof VipForm>>();
 const vipRenewFormRef = ref<InstanceType<typeof VipForm>>();
+const purchaseRecordsRef = ref<InstanceType<typeof PurchaseRecords>>();
 
 const formOptions: VbenFormProps = {
   collapsed: false,
@@ -398,6 +400,14 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
                 '备注',
               ),
               h(
+                'a',
+                {
+                  onClick: () => handleViewOrders(row),
+                  style: { color: '#1890ff' },
+                },
+                '购买记录',
+              ),
+              h(
                 Dropdown,
                 {
                   trigger: ['click'],
@@ -551,6 +561,11 @@ const handleVipCancel = async (row: UserManageApi.UserInfo) => {
   }
 };
 
+// 查看购买记录
+const handleViewOrders = (row: UserManageApi.UserInfo) => {
+  purchaseRecordsRef.value?.open(row.id);
+};
+
 // 刷新列表
 const refreshGrid = () => {
   gridApi.reload();
@@ -563,5 +578,6 @@ const refreshGrid = () => {
     <!-- VIP管理表单 -->
     <VipForm ref="vipGrantFormRef" action-type="grant" @success="refreshGrid" />
     <VipForm ref="vipRenewFormRef" action-type="renew" @success="refreshGrid" />
+    <PurchaseRecords ref="purchaseRecordsRef" />
   </Page>
 </template>

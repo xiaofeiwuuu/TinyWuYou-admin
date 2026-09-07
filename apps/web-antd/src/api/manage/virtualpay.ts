@@ -66,3 +66,38 @@ export async function updateVirtualPayApi(
 export async function deleteVirtualPayApi(id: number) {
   return requestClient.post(`/admin/virtualpay/products/${id}/delete`);
 }
+
+export namespace VirtualPayApi {
+  /** 购买订单 */
+  export interface OrderInfo {
+    id: number;
+    outTradeNo: string;
+    userId: number;
+    openid: string;
+    productId: string;
+    productType: string; // vip / download
+    amount: number;
+    price: number; // 分
+    status: string; // pending/paid/delivered/failed
+    wxOrderId: string | null;
+    deliveredAt: string | null;
+    createdAt: string;
+  }
+  export interface OrderListResult {
+    list: OrderInfo[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }
+}
+
+/** 购买订单列表（可按 userId 筛选，用于用户管理里查购买记录） */
+export async function getVirtualOrderListApi(params: {
+  userId?: number;
+  page?: number;
+  pageSize?: number;
+}) {
+  return requestClient.get<VirtualPayApi.OrderListResult>('/admin/virtualpay/orders', {
+    params,
+  });
+}

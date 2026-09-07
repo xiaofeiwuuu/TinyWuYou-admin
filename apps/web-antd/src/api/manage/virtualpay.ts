@@ -103,3 +103,8 @@ export async function getVirtualOrderListApi(params: {
     params,
   });
 }
+
+/** 后台主动退款（Android 等；iOS 由 Apple 决定，微信会返回错误） */
+export async function refundVirtualOrderApi(outTradeNo: string) {
+  return requestClient.post(`/admin/virtualpay/orders/${outTradeNo}/refund`);
+}

@@ -1,19 +1,47 @@
 <script lang="ts" setup>
 import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { VirtualPayApi } from '#/api/manage/virtualpay';
+
+import { h } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { formatDateTime } from '@vben/utils';
 
+import { Modal, message } from 'ant-design-vue';
+
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getVirtualOrderListApi } from '#/api/manage/virtualpay';
+import {
+  getVirtualOrderListApi,
+  refundVirtualOrderApi,
+} from '#/api/manage/virtualpay';
 
 const statusText: Record<string, string> = {
   pending: '待支付',
   paid: '已支付',
   delivered: '已发货',
   failed: '失败',
+  refunded: '已退款',
 };
+
+// 主动退款（仅已发货订单）
+function handleRefund(row: VirtualPayApi.OrderInfo) {
+  Modal.confirm({
+    title: '确认退款',
+    content: `确定给会员「${row.nickname || row.uid}」的订单 ${row.outTradeNo} 退款吗？退款成功会自动撤销对应权益。\n\n注意：iOS 订单无法由后台主动退款（需用户向 App Store 申请）。`,
+    okText: '发起退款',
+    okType: 'danger',
+    async onOk() {
+      try {
+        await refundVirtualOrderApi(row.outTradeNo);
+        message.success('退款已受理');
+        gridApi.query();
+      } catch (error: any) {
+        message.error(error?.message || '退款失败');
+      }
+    },
+  });
+}
 
 const formOptions: VbenFormProps = {
   collapsed: false,
@@ -37,7 +65,7 @@ const formOptions: VbenFormProps = {
   submitOnEnter: true,
 };
 
-const [Grid] = useVbenVxeGrid({
+const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions: {
     columns: [
@@ -82,6 +110,24 @@ const [Grid] = useVbenVxeGrid({
         field: 'deliveredAt',
         width: 170,
         formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '—'),
+      },
+      {
+        title: '操作',
+        width: 90,
+        fixed: 'right',
+        slots: {
+          default: ({ row }: { row: VirtualPayApi.OrderInfo }) =>
+            row.status === 'delivered'
+              ? h(
+                  'a',
+                  {
+                    style: { color: '#ff4d4f' },
+                    onClick: () => handleRefund(row),
+                  },
+                  '退款',
+                )
+              : h('span', { style: { color: '#999' } }, '—'),
+        },
       },
     ],
     height: 'auto',

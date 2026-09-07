@@ -17,6 +17,7 @@ import {
   MenuItem,
   message,
   Modal,
+  Tag,
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -275,8 +276,8 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       slots: {
         default: ({ row }) =>
           row.isVip === 1
-            ? h('span', { class: 'ant-tag ant-tag-gold' }, 'VIP')
-            : h('span', { class: 'ant-tag' }, '普通'),
+            ? h(Tag, { color: 'gold' }, { default: () => 'VIP' })
+            : h(Tag, {}, { default: () => '普通' }),
       },
     },
     {
@@ -328,40 +329,67 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       fixed: 'right',
       slots: {
         default: ({ row }) => {
-          // 按当前是否 VIP 决定菜单项：
-          //   VIP  → 续期VIP / 取消VIP
-          //   非VIP → 开通VIP
           // 判断口径与「VIP状态」列一致（row.isVip === 1）
           const isVip = row.isVip === 1;
-          const vipMenuItems = isVip
-            ? [
-                h(
-                  MenuItem,
-                  { key: 'renew', onClick: () => handleVipRenew(row) },
-                  { default: () => '续期VIP' },
-                ),
-                h(
-                  MenuItem,
-                  {
-                    key: 'cancel',
-                    onClick: () => handleVipCancel(row),
-                    style: { color: '#ff4d4f' },
-                  },
-                  { default: () => '取消VIP' },
-                ),
-              ]
-            : [
-                h(
-                  MenuItem,
-                  { key: 'grant', onClick: () => handleVipGrant(row) },
-                  { default: () => '开通VIP' },
-                ),
-              ];
-          const vipMenu = h(Menu, {}, { default: () => vipMenuItems });
 
           if (!canEdit) {
             return h('span', { style: { color: '#999' } }, '-');
           }
+
+          // VIP → 「VIP管理」下拉（续期/取消）；非VIP → 直接一个「开通VIP」链接
+          const vipAction = isVip
+            ? h(
+                Dropdown,
+                { trigger: ['click'] },
+                {
+                  default: () =>
+                    h(
+                      'a',
+                      {
+                        style: { color: '#faad14', fontWeight: 500 },
+                        onClick: (e: Event) => e.preventDefault(),
+                      },
+                      [
+                        'VIP管理 ',
+                        h('span', {
+                          class: 'icon-[ant-design--down-outlined]',
+                          style: { fontSize: '12px' },
+                        }),
+                      ],
+                    ),
+                  overlay: () =>
+                    h(
+                      Menu,
+                      {},
+                      {
+                        default: () => [
+                          h(
+                            MenuItem,
+                            { key: 'renew', onClick: () => handleVipRenew(row) },
+                            { default: () => '续期VIP' },
+                          ),
+                          h(
+                            MenuItem,
+                            {
+                              key: 'cancel',
+                              onClick: () => handleVipCancel(row),
+                              style: { color: '#ff4d4f' },
+                            },
+                            { default: () => '取消VIP' },
+                          ),
+                        ],
+                      },
+                    ),
+                },
+              )
+            : h(
+                'a',
+                {
+                  onClick: () => handleVipGrant(row),
+                  style: { color: '#faad14', fontWeight: 500 },
+                },
+                '开通VIP',
+              );
 
           return h(
             'div',
@@ -383,30 +411,7 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
                 },
                 '备注',
               ),
-              h(
-                Dropdown,
-                {
-                  trigger: ['click'],
-                },
-                {
-                  default: () =>
-                    h(
-                      'a',
-                      {
-                        style: { color: '#faad14', fontWeight: 500 },
-                        onClick: (e: Event) => e.preventDefault(),
-                      },
-                      [
-                        'VIP管理 ',
-                        h('span', {
-                          class: 'icon-[ant-design--down-outlined]',
-                          style: { fontSize: '12px' },
-                        }),
-                      ],
-                    ),
-                  overlay: () => vipMenu,
-                },
-              ),
+              vipAction,
             ],
           );
         },

@@ -329,12 +329,6 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       },
     },
     {
-      title: '注册时间',
-      field: 'createdAt',
-      width: 180,
-      formatter: ({ cellValue }) => formatDate(cellValue),
-    },
-    {
       title: '最后登录',
       field: 'lastLoginTime',
       width: 180,
@@ -347,15 +341,6 @@ const gridOptions: VxeTableGridOptions<UserManageApi.UserInfo> = {
       field: 'lastLoginIp',
       width: 140,
       showOverflow: true,
-      formatter: ({ cellValue }) => cellValue || '—',
-    },
-    {
-      title: '注册IP',
-      field: 'registerIp',
-      width: 140,
-      showOverflow: true,
-      // 和登录 IP 分开：注册 IP 只在建号时写一次，用来看"这批号从哪来的"，
-      // 查刷号时比最后登录 IP 有用——刷号的人换网络，但注册那一刻的来源改不了
       formatter: ({ cellValue }) => cellValue || '—',
     },
     {

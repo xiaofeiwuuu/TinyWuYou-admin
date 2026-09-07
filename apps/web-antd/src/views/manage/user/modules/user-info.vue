@@ -90,7 +90,12 @@ defineExpose({ open });
         </div>
       </div>
 
-      <ADescriptions :column="2" bordered size="small">
+      <ADescriptions
+        :column="2"
+        bordered
+        size="small"
+        :label-style="{ whiteSpace: 'nowrap' }"
+      >
         <ADescriptionsItem label="内部ID">{{ user.id }}</ADescriptionsItem>
         <ADescriptionsItem label="邀请码">
           {{ user.inviteCode || '-' }}

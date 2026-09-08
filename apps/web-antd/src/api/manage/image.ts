@@ -14,6 +14,8 @@ export namespace ImageManageApi {
     status?: number;
     isVip?: number;
     isRecommend?: number;
+    /** 是否人物图：1 是 / 0 否 */
+    isPerson?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
   }
@@ -33,6 +35,7 @@ export namespace ImageManageApi {
     hotScore: number;
     isVip: number;
     isRecommend: number;
+    isPerson: number;
     sortOrder: number;
     status: number;
     createdAt: string;
@@ -62,6 +65,7 @@ export namespace ImageManageApi {
     tags?: string;
     isVip?: number;
     isRecommend?: number;
+    isPerson?: number;
   }
 }
 
@@ -101,6 +105,7 @@ export async function batchImportImagesApi(data: {
   imageType: ImageType;
   isVip?: number;
   isRecommend?: number;
+  isPerson?: number;
   sortOrder?: number;
   images: Array<{
     url: string;
@@ -124,6 +129,7 @@ export async function batchUpdateImagesApi(data: {
     imageType?: ImageType;
     isVip?: number;
     isRecommend?: number;
+    isPerson?: number;
     sortOrder?: number;
     description?: string;
     status?: number;
@@ -137,4 +143,22 @@ export async function batchUpdateImagesApi(data: {
  */
 export async function batchDeleteImagesApi(ids: number[]) {
   return requestClient.post('/admin/images/batch/delete', { ids });
+}
+
+/**
+ * 人物图数量统计（一键开关前确认用）
+ */
+export async function countPersonImagesApi() {
+  return requestClient.get<{ total: number; enabled: number; disabled: number }>(
+    '/admin/images/person/count',
+  );
+}
+
+/**
+ * 一键启用/禁用所有人物图（status: 1 启用 / 0 禁用）
+ */
+export async function setPersonImagesStatusApi(status: number) {
+  return requestClient.post<{ affected: number }>('/admin/images/person/status', {
+    status,
+  });
 }

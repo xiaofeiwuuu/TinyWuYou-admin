@@ -18,8 +18,10 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getCategoryListApi } from '#/api/manage/category';
 import {
   batchDeleteImagesApi,
+  countPersonImagesApi,
   deleteImageApi,
   getImageListApi,
+  setPersonImagesStatusApi,
   updateImageApi,
 } from '#/api/manage/image';
 import { getAllImageTypeOptions } from '#/constants/image-type';
@@ -327,6 +329,20 @@ const formOptions: VbenFormProps = {
         ],
       },
     },
+    {
+      component: 'Select',
+      fieldName: 'isPerson',
+      label: '人物图',
+      componentProps: {
+        allowClear: true,
+        placeholder: '全部',
+        dropdownMatchSelectWidth: false,
+        options: [
+          { label: '否', value: 0 },
+          { label: '是', value: 1 },
+        ],
+      },
+    },
   ],
   wrapperClass: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-6',
   showCollapseButton: false,
@@ -383,6 +399,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
               formValues.isRecommend !== undefined &&
               formValues.isRecommend !== ''
                 ? Number(formValues.isRecommend)
+                : undefined,
+            isPerson:
+              formValues.isPerson !== undefined && formValues.isPerson !== ''
+                ? Number(formValues.isPerson)
                 : undefined,
             sortBy: sort?.field,
             sortOrder: sort?.order === 'desc' ? 'DESC' : 'ASC',
@@ -455,6 +475,43 @@ function onBatchSuccess() {
   }
   refreshGrid();
 }
+
+// 一键禁用/启用人物图（合规）：先取数量确认，再批量改 status
+function togglePersonImages(enable: boolean) {
+  const action = enable ? '启用' : '禁用';
+  countPersonImagesApi()
+    .then((stat) => {
+      const affectCount = enable ? stat.disabled : stat.enabled;
+      if (!stat.total) {
+        message.info('当前没有被标记为「人物图」的图片');
+        return;
+      }
+      AModal.confirm({
+        title: `一键${action}人物图`,
+        content: `共 ${stat.total} 张人物图（当前启用 ${stat.enabled} / 禁用 ${stat.disabled}）。确定${action}全部人物图吗？将影响约 ${affectCount} 张。`,
+        okText: `确定${action}`,
+        okType: enable ? 'primary' : 'danger',
+        async onOk() {
+          try {
+            const res = await setPersonImagesStatusApi(enable ? 1 : 0);
+            message.success(`已${action} ${res.affected} 张人物图`);
+            refreshGrid();
+          } catch (error: any) {
+            message.error(error?.message || '操作失败');
+          }
+        },
+      });
+    })
+    .catch((error: any) => message.error(error?.message || '获取人物图数量失败'));
+}
+
+function onDisablePersonImages() {
+  togglePersonImages(false);
+}
+
+function onEnablePersonImages() {
+  togglePersonImages(true);
+}
 </script>
 
 <template>
@@ -481,6 +538,14 @@ function onBatchSuccess() {
               </span>
             </div>
           </template>
+
+          <!-- 人物图一键开关（合规用） -->
+          <Button v-if="canEdit" danger @click="onDisablePersonImages">
+            一键禁用人物图
+          </Button>
+          <Button v-if="canEdit" type="default" @click="onEnablePersonImages">
+            一键启用人物图
+          </Button>
 
           <!-- 新增按钮 -->
           <template v-if="canCreate">

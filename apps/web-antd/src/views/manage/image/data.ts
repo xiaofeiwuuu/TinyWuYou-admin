@@ -171,6 +171,20 @@ export function useSchema(
       label: '推荐',
     },
     {
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        options: [
+          { label: '否', value: 0 },
+          { label: '是', value: 1 },
+        ],
+        optionType: 'button',
+      },
+      defaultValue: 0,
+      fieldName: 'isPerson',
+      label: '人物图',
+    },
+    {
       component: 'Textarea',
       componentProps: {
         maxLength: 255,
@@ -282,6 +296,18 @@ export function useColumns(
         options: [
           { color: 'default', label: '否', value: 0 },
           { color: 'red', label: '是', value: 1 },
+        ],
+      },
+    },
+    {
+      title: '人物图',
+      field: 'isPerson',
+      width: 80,
+      cellRender: {
+        name: 'CellTag',
+        options: [
+          { color: 'default', label: '否', value: 0 },
+          { color: 'orange', label: '人物', value: 1 },
         ],
       },
     },

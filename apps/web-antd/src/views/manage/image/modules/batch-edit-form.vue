@@ -133,6 +133,22 @@ const [Form, formApi] = useVbenForm({
         buttonStyle: 'solid',
         options: [
           { label: '保持不变', value: undefined },
+          { label: '否', value: 0 },
+          { label: '是', value: 1 },
+        ],
+        optionType: 'button',
+      },
+      defaultValue: undefined,
+      fieldName: 'isPerson',
+      label: '人物图',
+      formItemClass: 'col-span-2',
+    },
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        options: [
+          { label: '保持不变', value: undefined },
           { label: '禁用', value: 0 },
           { label: '启用', value: 1 },
         ],
@@ -186,6 +202,9 @@ const [Modal, modalApi] = useVbenModal({
       }
       if (values.isRecommend !== undefined && values.isRecommend !== null) {
         updateData.isRecommend = values.isRecommend;
+      }
+      if (values.isPerson !== undefined && values.isPerson !== null) {
+        updateData.isPerson = values.isPerson;
       }
       if (values.sortOrder !== undefined && values.sortOrder !== null) {
         updateData.sortOrder = values.sortOrder;

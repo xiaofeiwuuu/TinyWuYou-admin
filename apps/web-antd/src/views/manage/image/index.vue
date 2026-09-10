@@ -124,8 +124,15 @@ async function onBatchDelete() {
         key: 'batch_delete_msg',
       });
 
-      // 清空选择
+      // 清空选择：本地 ref + 表格内部勾选态都要清。
+      // 表格配了 reserve:true（跨页保留勾选），只清 ref 不清表格的话，
+      // 已删的 id 仍留在 getCheckboxReserveRecords 里，下次勾选会把它们算进去
+      // （删16个后再勾2个，提示18个）。
       selectedRows.value = [];
+      if ($grid) {
+        $grid.clearCheckboxRow();
+        $grid.clearCheckboxReserve();
+      }
 
       refreshGrid();
     } catch {

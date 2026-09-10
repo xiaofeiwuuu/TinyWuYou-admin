@@ -15,6 +15,8 @@ export namespace StatisticsApi {
     dailyDownloads: number;
     vipUsers: number;
     totalCollections: number;
+    totalRevenue: number;
+    todayRevenue: number;
     createdAt: string;
     updatedAt: string;
   }
@@ -103,6 +105,26 @@ export async function getDownloadStatsByDateRangeApi(startDate: string, endDate:
 export async function getDownloadStatsByMonthApi(year: number) {
   return requestClient.get<Array<{ month: string; downloads: number }>>(
     '/admin/statistics/downloads/monthly',
+    { params: { year } },
+  );
+}
+
+/**
+ * 按日期范围获取收入统计(来自购买记录,单位:元)
+ */
+export async function getRevenueStatsByDateRangeApi(startDate: string, endDate: string) {
+  return requestClient.get<Array<{ date: string; revenue: number; orderCount: number }>>(
+    '/admin/statistics/revenue/daily',
+    { params: { startDate, endDate } },
+  );
+}
+
+/**
+ * 按月份获取收入统计(单位:元)
+ */
+export async function getRevenueStatsByMonthApi(year: number) {
+  return requestClient.get<Array<{ month: string; revenue: number; orderCount: number }>>(
+    '/admin/statistics/revenue/monthly',
     { params: { year } },
   );
 }

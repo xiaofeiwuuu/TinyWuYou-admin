@@ -9,17 +9,22 @@ import {
   AnalysisOverview,
 } from '@vben/common-ui';
 import {
-  SvgBellIcon,
+  createIconifyIcon,
   SvgCakeIcon,
   SvgCardIcon,
   SvgDownloadIcon,
 } from '@vben/icons';
 import { getOverviewStatisticsApi } from '#/api/dashboard/statistics';
 
+// 收入卡片图标(lucide 图标本项目菜单随处在用,能正常渲染)
+const RevenueIcon = createIconifyIcon('lucide:circle-dollar-sign');
+
 import AnalyticsTrends from './analytics-trends.vue';
 import AnalyticsVisits from './analytics-visits.vue';
 import AnalyticsDownloadsTrends from './analytics-downloads-trends.vue';
 import AnalyticsDownloadsMonthly from './analytics-downloads-monthly.vue';
+import AnalyticsRevenueTrends from './analytics-revenue-trends.vue';
+import AnalyticsRevenueMonthly from './analytics-revenue-monthly.vue';
 
 const overviewItems = ref<AnalysisOverviewItem[]>([
   {
@@ -44,9 +49,9 @@ const overviewItems = ref<AnalysisOverviewItem[]>([
     value: 0,
   },
   {
-    icon: markRaw(SvgBellIcon),
-    title: '文案量',
-    totalTitle: '总文案量',
+    icon: markRaw(RevenueIcon),
+    title: '收入(元)',
+    totalTitle: '总收入(元)',
     totalValue: 0,
     value: 0,
   },
@@ -79,11 +84,11 @@ async function loadStatistics() {
         value: data.dailyDownloads,
       },
       {
-        icon: markRaw(SvgBellIcon),
-        title: '文案量',
-        totalTitle: '总文案量',
-        totalValue: data.totalTexts,
-        value: data.newTexts,
+        icon: markRaw(RevenueIcon),
+        title: '收入(元)',
+        totalTitle: '总收入(元)',
+        totalValue: data.totalRevenue,
+        value: data.todayRevenue,
       },
     ];
   } catch (error) {
@@ -116,6 +121,17 @@ const downloadChartTabs: TabOption[] = [
     value: 'downloads-monthly',
   },
 ];
+
+const revenueChartTabs: TabOption[] = [
+  {
+    label: '收入趋势',
+    value: 'revenue-trends',
+  },
+  {
+    label: '月收入统计',
+    value: 'revenue-monthly',
+  },
+];
 </script>
 
 <template>
@@ -139,6 +155,16 @@ const downloadChartTabs: TabOption[] = [
       </template>
       <template #downloads-monthly>
         <AnalyticsDownloadsMonthly />
+      </template>
+    </AnalysisChartsTabs>
+
+    <!-- 收入统计图表(来自购买记录) -->
+    <AnalysisChartsTabs :tabs="revenueChartTabs" class="mt-5">
+      <template #revenue-trends>
+        <AnalyticsRevenueTrends />
+      </template>
+      <template #revenue-monthly>
+        <AnalyticsRevenueMonthly />
       </template>
     </AnalysisChartsTabs>
   </div>

@@ -11,6 +11,9 @@ export namespace AnnouncementApi {
     title: string;
     content: string;
     isEnabled: number; // 1 启用 0 禁用
+    /** 发布时间(空=立即生效) / 结束时间(空=长期有效) */
+    publishTime: null | string;
+    endTime: null | string;
     createdAt: string;
   }
 
@@ -25,6 +28,9 @@ export namespace AnnouncementApi {
     title: string;
     content: string;
     isEnabled?: number;
+    /** YYYY-MM-DD HH:mm:ss，空/null 表示不限制 */
+    publishTime?: null | string;
+    endTime?: null | string;
   }
 }
 

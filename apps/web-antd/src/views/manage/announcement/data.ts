@@ -52,6 +52,32 @@ export function useSchema(): VbenFormSchema[] {
       help: '小程序弹「最新启用」的一条；停用后不再下发',
       defaultValue: 1,
     },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        placeholder: '留空=立即生效',
+        class: 'w-full',
+      },
+      fieldName: 'publishTime',
+      label: '发布时间',
+      help: '未到发布时间不弹；留空表示立即生效',
+    },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        placeholder: '留空=长期有效',
+        class: 'w-full',
+      },
+      fieldName: 'endTime',
+      label: '结束时间',
+      help: '小程序打开时若超过结束时间就不再弹；留空表示长期有效',
+    },
   ];
 }
 
@@ -68,6 +94,18 @@ export function useColumns(
       field: 'isEnabled',
       width: 100,
       cellRender: { name: 'CellTag', options: getStatusOptions() },
+    },
+    {
+      title: '发布时间',
+      field: 'publishTime',
+      width: 170,
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '立即'),
+    },
+    {
+      title: '结束时间',
+      field: 'endTime',
+      width: 170,
+      formatter: ({ cellValue }) => (cellValue ? formatDateTime(cellValue) : '长期'),
     },
     {
       title: '创建时间',

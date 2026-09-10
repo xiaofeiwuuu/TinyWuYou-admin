@@ -59,6 +59,8 @@ const [Modal, modalApi] = useVbenModal({
         title: data.title,
         content: data.content,
         isEnabled: data.isEnabled,
+        publishTime: data.publishTime || undefined,
+        endTime: data.endTime || undefined,
       });
     }
   },

@@ -5,9 +5,10 @@ import { onMounted, ref } from 'vue';
 
 import { Page, useVbenForm } from '@vben/common-ui';
 
-import { Button as AButton, Card, message } from 'ant-design-vue';
+import { Alert, Button as AButton, Card, message } from 'ant-design-vue';
 
 import { z } from '#/adapter/form';
+import { getAdConfigApi, updateAdConfigApi } from '#/api/manage/ad';
 import { getPlatformListApi, updatePlatformsApi } from '#/api/manage/platform';
 
 import CertStatus from './cert-status.vue';
@@ -15,6 +16,9 @@ import CertStatus from './cert-status.vue';
 const loading = ref(false);
 const platformDisabled = ref(true);
 const weixinPlatform = ref<null | PlatformManageApi.PlatformConfig>(null);
+
+const adLoading = ref(false);
+const adDisabled = ref(true);
 
 // 微信平台配置表单
 const [PlatformForm, platformFormApi] = useVbenForm({
@@ -98,6 +102,88 @@ const [PlatformForm, platformFormApi] = useVbenForm({
   ],
   showDefaultActions: false,
 });
+
+// 广告配置表单(激励视频 / 插屏 / 原生模板广告 ID),独立走 /ad 接口
+const [AdForm, adFormApi] = useVbenForm({
+  layout: 'horizontal',
+  wrapperClass: 'grid-cols-1',
+  commonConfig: { componentProps: { class: 'w-full' } },
+  schema: [
+    {
+      component: 'Input',
+      fieldName: 'video',
+      label: '激励视频广告ID',
+      componentProps: { placeholder: '请输入激励视频广告 ID', disabled: true },
+      rules: z.string().optional(),
+    },
+    {
+      component: 'Input',
+      fieldName: 'interstitial',
+      label: '插屏广告ID',
+      componentProps: { placeholder: '请输入插屏广告 ID', disabled: true },
+      rules: z.string().optional(),
+    },
+    {
+      component: 'Input',
+      fieldName: 'native',
+      label: '原生模板广告ID',
+      componentProps: { placeholder: '请输入原生模板广告 ID', disabled: true },
+      rules: z.string().optional(),
+    },
+  ],
+  showDefaultActions: false,
+});
+
+async function loadAdConfig() {
+  try {
+    const res = await getAdConfigApi();
+    await adFormApi.setValues(res);
+    adDisabled.value = true;
+  } catch {
+    message.error('加载广告配置失败');
+  }
+}
+
+function setAdFieldsDisabled(isDisabled: boolean) {
+  adFormApi.setState((prev) => ({
+    schema: prev.schema?.map((item) => ({
+      ...item,
+      componentProps: { ...item.componentProps, disabled: isDisabled },
+    })),
+  }));
+}
+
+function handleEditAd() {
+  setAdFieldsDisabled(false);
+  adDisabled.value = false;
+}
+
+function handleCancelAd() {
+  setAdFieldsDisabled(true);
+  adDisabled.value = true;
+  loadAdConfig();
+}
+
+async function handleSaveAd() {
+  adLoading.value = true;
+  try {
+    const { valid } = await adFormApi.validate();
+    if (!valid) {
+      adLoading.value = false;
+      return;
+    }
+    const values = await adFormApi.getValues();
+    await updateAdConfigApi(values);
+    message.success('广告配置保存成功');
+    setAdFieldsDisabled(true);
+    adDisabled.value = true;
+    await loadAdConfig();
+  } catch (error: any) {
+    message.error(error?.message || '广告配置保存失败');
+  } finally {
+    adLoading.value = false;
+  }
+}
 
 // 加载微信平台配置
 async function loadPlatformConfig() {
@@ -204,6 +290,7 @@ async function handleSavePlatform() {
 
 onMounted(() => {
   loadPlatformConfig();
+  loadAdConfig();
 });
 </script>
 
@@ -237,6 +324,58 @@ onMounted(() => {
               保存配置
             </AButton>
             <AButton @click="handleCancelPlatform"> 取消 </AButton>
+          </div>
+        </div>
+      </Card>
+
+      <!-- 广告配置(小程序流量主广告位 ID) -->
+      <Card title="广告配置" :bordered="false">
+        <template #extra>
+          <AButton v-if="adDisabled" type="primary" @click="handleEditAd">
+            修改
+          </AButton>
+        </template>
+
+        <div class="mx-auto max-w-3xl">
+          <Alert type="info" show-icon class="mb-4">
+            <template #message>广告位 ID 从哪里来?</template>
+            <template #description>
+              <div class="leading-relaxed">
+                <p>
+                  下面三个 ID(激励视频 / 插屏 / 原生模板)需要先在
+                  <b>微信公众平台「流量主」</b>创建对应广告位后获得,再填到这里。
+                </p>
+                <p>
+                  开通条件:小程序<b>累计独立访客(UV)不低于 1000</b>、且无违规记录,
+                  才能开通流量主。达到后在左侧菜单「流量主」点开通,同意协议即可创建广告位。
+                </p>
+                <p class="mt-1">
+                  前往:
+                  <a
+                    href="https://mp.weixin.qq.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >微信公众平台(登录后进入「流量主」)</a>
+                  <span class="ml-3 text-gray-400">
+                    开通流程:
+                    <a
+                      href="https://developers.weixin.qq.com/community/develop/doc/000046f02244a041da79753e557009"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >官方说明</a>
+                  </span>
+                </p>
+              </div>
+            </template>
+          </Alert>
+
+          <AdForm />
+
+          <div v-if="!adDisabled" class="mt-4 flex gap-2">
+            <AButton type="primary" :loading="adLoading" @click="handleSaveAd">
+              保存配置
+            </AButton>
+            <AButton @click="handleCancelAd"> 取消 </AButton>
           </div>
         </div>
       </Card>

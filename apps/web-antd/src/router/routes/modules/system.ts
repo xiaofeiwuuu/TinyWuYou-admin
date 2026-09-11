@@ -39,16 +39,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/manage/platform/index.vue'),
         meta: {
           icon: 'lucide:boxes',
+          // 广告配置已并入本页(平台配置)的「广告配置」卡片,不再单列菜单
           title: $t('平台配置'),
-        },
-      },
-      {
-        name: 'SystemAd',
-        path: '/system/ad',
-        component: () => import('#/views/manage/ad/index.vue'),
-        meta: {
-          icon: 'lucide:megaphone',
-          title: $t('广告配置'),
         },
       },
     ],

@@ -5,7 +5,7 @@ import { onMounted, ref } from 'vue';
 
 import { Page, useVbenForm } from '@vben/common-ui';
 
-import { Alert, Button as AButton, Card, message } from 'ant-design-vue';
+import { Button as AButton, Card, message } from 'ant-design-vue';
 
 import { z } from '#/adapter/form';
 import { getAdConfigApi, updateAdConfigApi } from '#/api/manage/ad';
@@ -337,37 +337,22 @@ onMounted(() => {
         </template>
 
         <div class="mx-auto max-w-3xl">
-          <Alert type="info" show-icon class="mb-4">
-            <template #message>广告位 ID 从哪里来?</template>
-            <template #description>
-              <div class="leading-relaxed">
-                <p>
-                  下面三个 ID(激励视频 / 插屏 / 原生模板)需要先在
-                  <b>微信公众平台「流量主」</b>创建对应广告位后获得,再填到这里。
-                </p>
-                <p>
-                  开通条件:小程序<b>累计独立访客(UV)不低于 1000</b>、且无违规记录,
-                  才能开通流量主。达到后在左侧菜单「流量主」点开通,同意协议即可创建广告位。
-                </p>
-                <p class="mt-1">
-                  前往:
-                  <a
-                    href="https://mp.weixin.qq.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >微信公众平台(登录后进入「流量主」)</a>
-                  <span class="ml-3 text-gray-400">
-                    开通流程:
-                    <a
-                      href="https://developers.weixin.qq.com/community/develop/doc/000046f02244a041da79753e557009"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >官方说明</a>
-                  </span>
-                </p>
-              </div>
-            </template>
-          </Alert>
+          <div class="mb-3 text-xs text-gray-400">
+            广告位 ID 需在微信公众平台「流量主」创建广告位后填入(小程序累计 UV≥1000
+            且无违规方可开通)。
+            <a
+              class="text-blue-500 hover:underline"
+              href="https://mp.weixin.qq.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >前往开通 ›</a>
+            <a
+              class="ml-2 text-blue-500 hover:underline"
+              href="https://developers.weixin.qq.com/community/develop/doc/000046f02244a041da79753e557009"
+              target="_blank"
+              rel="noopener noreferrer"
+            >开通流程 ›</a>
+          </div>
 
           <AdForm />
 

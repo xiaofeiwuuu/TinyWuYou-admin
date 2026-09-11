@@ -325,6 +325,17 @@ onMounted(() => {
             </AButton>
             <AButton @click="handleCancelPlatform"> 取消 </AButton>
           </div>
+
+          <div class="mt-3 text-xs text-gray-400">
+            AppID / OfferID / AppKey 在微信「虚拟支付」开通后获取;消息推送 Token 在
+            公众平台「开发管理 → 消息推送」里扫码开启。
+            <a
+              class="text-blue-500 hover:underline"
+              href="https://mp.weixin.qq.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >微信公众平台 ›</a>
+          </div>
         </div>
       </Card>
 
@@ -337,7 +348,16 @@ onMounted(() => {
         </template>
 
         <div class="mx-auto max-w-3xl">
-          <div class="mb-3 text-xs text-gray-400">
+          <AdForm />
+
+          <div v-if="!adDisabled" class="mt-4 flex gap-2">
+            <AButton type="primary" :loading="adLoading" @click="handleSaveAd">
+              保存配置
+            </AButton>
+            <AButton @click="handleCancelAd"> 取消 </AButton>
+          </div>
+
+          <div class="mt-3 text-xs text-gray-400">
             广告位 ID 需在微信公众平台「流量主」创建广告位后填入(小程序累计 UV≥1000
             且无违规方可开通)。
             <a
@@ -352,15 +372,6 @@ onMounted(() => {
               target="_blank"
               rel="noopener noreferrer"
             >开通流程 ›</a>
-          </div>
-
-          <AdForm />
-
-          <div v-if="!adDisabled" class="mt-4 flex gap-2">
-            <AButton type="primary" :loading="adLoading" @click="handleSaveAd">
-              保存配置
-            </AButton>
-            <AButton @click="handleCancelAd"> 取消 </AButton>
           </div>
         </div>
       </Card>

@@ -5,7 +5,7 @@ import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { Alert, Button as AButton, message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createVirtualPayApi, updateVirtualPayApi } from '#/api/manage/virtualpay';
@@ -68,6 +68,25 @@ const [Modal, modalApi] = useVbenModal({
 
 <template>
   <Modal :title="getTitle">
+    <Alert type="warning" show-icon class="mx-4 mb-3">
+      <template #message>
+        请先在微信公众平台创建虚拟商品,再在此创建
+      </template>
+      <template #description>
+        <div class="leading-relaxed">
+          商品ID <b>必须与微信公众平台「虚拟支付」里的商品 ID 完全一致</b>,
+          否则用户无法下单。
+          <AButton
+            type="link"
+            size="small"
+            href="https://mp.weixin.qq.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="!px-0"
+          >打开微信公众平台 ›</AButton>
+        </div>
+      </template>
+    </Alert>
     <Form class="mx-4" />
   </Modal>
 </template>

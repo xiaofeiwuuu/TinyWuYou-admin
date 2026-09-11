@@ -145,6 +145,17 @@ function refreshGrid() {
     <FormModal @success="refreshGrid" />
     <Grid table-title="虚拟商品管理">
       <template #toolbar-tools>
+        <span class="mr-3 hidden text-xs text-gray-400 lg:inline">
+          需先在微信公众平台创建虚拟商品,再在此创建(商品ID 必须一致),否则用户无法下单
+        </span>
+        <Button
+          class="mr-2"
+          href="https://mp.weixin.qq.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          打开微信公众平台
+        </Button>
         <Button type="primary" @click="onCreate">
           <Plus class="size-5" />
           新增商品

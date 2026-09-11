@@ -27,9 +27,10 @@ export function useSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { placeholder: '如 vip_30 / dl_100（唯一，编辑时勿改）' },
+      componentProps: { placeholder: '需与公众平台虚拟商品 ID 一致（编辑时勿改）' },
       fieldName: 'productId',
       label: '商品ID',
+      help: '必须与微信公众平台「虚拟支付」里的商品 ID 完全一致,否则用户无法下单',
       rules: z.string().min(1, '请输入商品ID'),
     },
     {

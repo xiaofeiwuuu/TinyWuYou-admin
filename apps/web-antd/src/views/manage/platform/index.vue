@@ -25,6 +25,8 @@ const [PlatformForm, platformFormApi] = useVbenForm({
   layout: 'horizontal',
   wrapperClass: 'grid-cols-1',
   commonConfig: {
+    // label 带了 ? 图标,窄了会换行,加宽一点
+    labelWidth: 130,
     componentProps: {
       class: 'w-full',
     },
@@ -41,6 +43,7 @@ const [PlatformForm, platformFormApi] = useVbenForm({
       component: 'Input',
       fieldName: 'platformName',
       label: '平台名称',
+      help: '仅后台内部显示的名称,不是小程序对外名称;小程序名称请在微信公众平台「账号设置」修改',
       componentProps: { placeholder: '请输入平台名称', disabled: true },
       rules: z.string(),
     },
@@ -113,7 +116,7 @@ const [PlatformForm, platformFormApi] = useVbenForm({
 const [AdForm, adFormApi] = useVbenForm({
   layout: 'horizontal',
   wrapperClass: 'grid-cols-1',
-  commonConfig: { componentProps: { class: 'w-full' } },
+  commonConfig: { labelWidth: 130, componentProps: { class: 'w-full' } },
   schema: [
     {
       component: 'Input',
@@ -309,6 +312,14 @@ onMounted(() => {
       <!-- 微信平台配置 -->
       <Card title="微信小程序配置" :bordered="false">
         <template #extra>
+          <AButton
+            href="https://mp.weixin.qq.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mr-2"
+          >
+            打开微信公众平台
+          </AButton>
           <AButton
             v-if="platformDisabled"
             type="primary"

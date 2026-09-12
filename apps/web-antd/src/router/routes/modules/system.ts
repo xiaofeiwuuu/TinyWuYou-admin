@@ -43,6 +43,15 @@ const routes: RouteRecordRaw[] = [
           title: $t('平台配置'),
         },
       },
+      {
+        name: 'SystemBannedIp',
+        path: '/system/banned-ip',
+        component: () => import('#/views/manage/banned-ip/index.vue'),
+        meta: {
+          icon: 'lucide:shield-ban',
+          title: $t('IP 封禁'),
+        },
+      },
     ],
   },
 ];

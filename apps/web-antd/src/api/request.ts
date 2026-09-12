@@ -190,6 +190,29 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
         }
       }
 
+      // GET 也签名(不加密):防止 web / 脚本直接调用开放的 GET 接口。
+      // 签名内容与非 GET 一致(body 为空 → sha256('')),后端复用同一套校验。
+      if (aesKey && !isMutation) {
+        try {
+          const timestamp = Date.now().toString();
+          const nonce = CryptoUtil.generateNonce();
+          const path = `/api${url.split('?')[0]}`;
+          config.headers['x-timestamp'] = timestamp;
+          config.headers['x-nonce'] = nonce;
+          config.headers['x-signature'] = CryptoUtil.buildSignature({
+            method,
+            path,
+            timestamp,
+            nonce,
+            body: '',
+            aesKey,
+          });
+        } catch (error) {
+          console.error('[Request] GET 签名失败，中止请求:', error);
+          throw new Error('请求签名失败，请刷新页面重试');
+        }
+      }
+
       return config;
     },
   });
